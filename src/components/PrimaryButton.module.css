@@ -1,0 +1,103 @@
+/* PrimaryButton 컴포넌트 스타일 */
+.primary-button {
+  width: 100%;
+  padding: 16px 24px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  outline: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  text-align: center;
+  font-family: "Pretendard Variable", sans-serif;
+  font-size: 32px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 150%; /* 48px */
+  letter-spacing: -0.704px;
+  -webkit-tap-highlight-color: transparent; /* 모바일에서 탭 하이라이트 제거 */
+  -webkit-user-select: none; /* 텍스트 선택 방지 */
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.primary-button:focus {
+  box-shadow: 0 0 0 2px rgba(177, 165, 255, 0.2);
+}
+
+/* 설정1 - 활성 상태 */
+.primary-button--primary {
+  background: #7560FF;
+  color: #FFF;
+  box-shadow: 0 4px 4px 0 rgba(236, 130, 255, 0.33), 0 0 8px 0 rgba(114, 97, 244, 0.33) !important;
+}
+
+.primary-button--primary:hover {
+  background: #6B55E8;
+}
+
+.primary-button--primary:active {
+  background: #6B55E8 !important;
+  box-shadow: 0 4px 4px 0 rgba(236, 130, 255, 0.33), 0 0 8px 0 rgba(114, 97, 244, 0.33) !important;
+  transform: translateY(1px); /* 살짝 눌린 효과 */
+}
+
+.primary-button--primary:focus:active {
+  background: #6B55E8 !important;
+  box-shadow: 0 4px 4px 0 rgba(236, 130, 255, 0.33), 0 0 8px 0 rgba(114, 97, 244, 0.33) !important;
+  transform: translateY(1px);
+}
+
+/* 설정2 - 비활성 상태 */
+.primary-button--secondary {
+  background: #FFF;
+  color: #7560FD;
+  box-shadow: 0 4px 4px 0 rgba(236, 130, 255, 0.33), 0 0 8px 0 rgba(114, 97, 244, 0.33) !important;
+}
+
+.primary-button--secondary:hover {
+  background: #F8F7FF;
+}
+
+.primary-button--secondary:active {
+  background: #F8F7FF !important;
+  box-shadow: 0 4px 4px 0 rgba(236, 130, 255, 0.33), 0 0 8px 0 rgba(114, 97, 244, 0.33) !important;
+  transform: translateY(1px); /* 살짝 눌린 효과 */
+}
+
+.primary-button--secondary:focus:active {
+  background: #F8F7FF !important;
+  box-shadow: 0 4px 4px 0 rgba(236, 130, 255, 0.33), 0 0 8px 0 rgba(114, 97, 244, 0.33) !important;
+  transform: translateY(1px);
+}
+
+.primary-button--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #F5F5F5 !important;
+  color: #999 !important;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+.primary-button--disabled:hover {
+  background: #F5F5F5 !important;
+  color: #999 !important;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1) !important;
+  transform: none;
+}
+
+.primary-button--disabled:active {
+  background: #F5F5F5 !important;
+  color: #999 !important;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1) !important;
+  transform: none;
+}
+
+.play-icon {
+  width: 28px;
+  height: 32px;
+  margin-right: 47.76px;
+}

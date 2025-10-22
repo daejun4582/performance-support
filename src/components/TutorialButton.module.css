@@ -1,0 +1,246 @@
+/* TutorialButton 컴포넌트 스타일 */
+.tutorial-button {
+  border-radius: 16px;
+  border: 1.414px solid #CBC4FF;
+  background: #FFF;
+  width: 82px;
+  height: 82px;
+  flex-shrink: 0;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.tutorial-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tutorial-button:active {
+  transform: translateY(0);
+}
+
+.tutorial-button--selected {
+  background: rgba(117, 96, 255, 0.18);
+}
+
+/* CC 텍스트 */
+.cc-text {
+  color: #666;
+  font-family: "Pretendard Variable";
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.tutorial-button--selected .cc-text {
+  color: #FFF;
+}
+
+/* Eye 아이콘 */
+.eye-icon {
+  width: 20px;
+  height: 20px;
+  position: relative;
+}
+
+.eye-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 12px;
+  border: 2px solid;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+}
+
+.eye-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.tutorial-button--unselected .eye-icon::before,
+.tutorial-button--unselected .eye-icon::after {
+  color: #666;
+}
+
+.tutorial-button--selected .eye-icon::before,
+.tutorial-button--selected .eye-icon::after {
+  color: #FFF;
+}
+
+/* Settings 아이콘 */
+.settings-icon {
+  width: 20px;
+  height: 20px;
+  position: relative;
+}
+
+.settings-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border: 2px solid;
+  border-radius: 50%;
+  border-top-color: transparent;
+  border-right-color: transparent;
+}
+
+.settings-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  border: 2px solid;
+  border-radius: 50%;
+  border-top-color: transparent;
+  border-right-color: transparent;
+}
+
+.tutorial-button--unselected .settings-icon::before,
+.tutorial-button--unselected .settings-icon::after {
+  border-color: #666;
+}
+
+.tutorial-button--selected .settings-icon::before,
+.tutorial-button--selected .settings-icon::after {
+  border-color: #FFF;
+}
+
+/* Play 아이콘 */
+.play-icon {
+  width: 0;
+  height: 0;
+  border-left: 16px solid #666;
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  margin-left: 2px;
+}
+
+.tutorial-button--selected .play-icon {
+  border-left-color: #FFF;
+}
+
+/* Adlib 토글 버튼 */
+.tutorial-button--adlib {
+  width: 159.759px;
+  height: 72.103px;
+  border-radius: 93.31px;
+  background: #000;
+  border: 1.414px solid #000;
+  position: relative;
+  overflow: hidden;
+}
+
+.tutorial-button--adlib:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.adlib-toggle {
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 65.034px;
+  height: 63.621px;
+  border-radius: 93.31px;
+  background: #F9F9F9;
+  transition: transform 0.3s ease;
+}
+
+.tutorial-button--adlib.tutorial-button--selected {
+  background: #7560FF;
+}
+
+.tutorial-button--adlib.tutorial-button--selected .adlib-toggle {
+  transform: translateY(-50%) translateX(86px);
+}
+
+.adlib-text {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #FFF;
+  text-align: center;
+  font-family: Inter;
+  font-size: 19.793px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 110%; /* 21.772px */
+  letter-spacing: -0.435px;
+  white-space: pre-line;
+  width: 80px; /* 토글 원과 충돌하지 않는 공간 */
+}
+
+.tutorial-button--adlib.tutorial-button--selected .adlib-text {
+  left: 16px;
+  right: auto;
+  width: 80px; /* 토글 원과 충돌하지 않는 공간 */
+}
+
+/* 액션 버튼 */
+.tutorial-action-button {
+  width: 250.983px;
+  height: 64.77px;
+  flex-shrink: 0;
+  border-radius: 10.795px;
+  border: 0.9px solid #6146FF;
+  background: #7560FF;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.tutorial-action-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(117, 96, 255, 0.3);
+}
+
+.tutorial-action-button:active {
+  transform: translateY(0);
+}
+
+.tutorial-action-button {
+  color: #FFF;
+  text-align: center;
+  font-family: "Pretendard Variable";
+  font-size: 30px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 150%; /* 45px */
+  letter-spacing: -0.66px;
+}

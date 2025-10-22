@@ -1,0 +1,163 @@
+/* ToggleIconButton 컴포넌트 스타일 */
+.toggle-button {
+  width: 82px;
+  height: 82px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  border: 1.414px solid #CBC4FF;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.toggle-button--unselected {
+  background: rgba(255, 255, 255, 0.70);
+}
+
+.toggle-button--selected {
+  background: rgba(117, 96, 255, 0.18);
+}
+
+.toggle-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-button:active {
+  transform: translateY(0);
+}
+
+/* Play/Pause 아이콘 */
+.play-icon {
+  width: 0;
+  height: 0;
+  border-left: 16px solid #000;
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  margin-left: 2px;
+}
+
+.pause-icon {
+  display: flex;
+  gap: 4px;
+}
+
+.pause-icon::before,
+.pause-icon::after {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: #666;
+  border-radius: 2px;
+}
+
+/* Settings 아이콘 */
+.settings-icon {
+  width: 20px;
+  height: 20px;
+  position: relative;
+}
+
+.settings-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border: 2px solid;
+  border-radius: 50%;
+  border-top-color: transparent;
+  border-right-color: transparent;
+}
+
+.settings-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  border: 2px solid;
+  border-radius: 50%;
+  border-top-color: transparent;
+  border-right-color: transparent;
+}
+
+.toggle-button--unselected .settings-icon::before,
+.toggle-button--unselected .settings-icon::after {
+  border-color: #666;
+}
+
+.toggle-button--selected .settings-icon::before,
+.toggle-button--selected .settings-icon::after {
+  border-color: #FFF;
+}
+
+/* CC 텍스트 */
+.cc-text {
+  font-family: "Pretendard Variable";
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.toggle-button--unselected .cc-text {
+  color: #666;
+}
+
+.toggle-button--selected .cc-text {
+  color: #FFF;
+}
+
+/* Eye 아이콘 */
+.eye-icon {
+  width: 20px;
+  height: 20px;
+  position: relative;
+}
+
+.eye-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 12px;
+  border: 2px solid;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+}
+
+.eye-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.toggle-button--unselected .eye-icon::before,
+.toggle-button--unselected .eye-icon::after {
+  color: #666;
+}
+
+.toggle-button--selected .eye-icon::before,
+.toggle-button--selected .eye-icon::after {
+  color: #FFF;
+}

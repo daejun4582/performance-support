@@ -1,0 +1,138 @@
+/* DisplayBox 컴포넌트 스타일 */
+.input-field {
+  width: 258px;
+  height: 62px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  border: 1px solid #E0E0E0;
+  background: #C0C0C0;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  transition: all 0.2s ease;
+  color: #000;
+  font-family: "Pretendard Variable", sans-serif;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 170%; /* 30.6px */
+}
+
+.input-field--purple {
+  border: 1px solid #7560FF;
+  background: #CBC4FF;
+}
+
+.input-field-container {
+  position: relative;
+  display: inline-block;
+}
+
+.input-field--with-button {
+  padding-right: 56px;
+  border-radius: 12px;
+  border: 1px solid #E0E0E0;
+  background: #C0C0C0;
+}
+
+.na-button {
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-30%);
+  width: 43px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 0.5px solid #9C8CFA;
+  background: rgba(0, 0, 0, 0.30);
+  color: #FEFEFE;
+  text-align: center;
+  font-family: "Pretendard Variable", sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 150%; /* 18px */
+  letter-spacing: -0.264px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.na-button:hover {
+  background: rgba(0, 0, 0, 0.40);
+}
+
+.na-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(156, 140, 250, 0.2);
+}
+
+/* 캐릭터 카드 스타일 */
+.characterCard {
+  width: 258px;
+  height: 62px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  border: 2px solid #7560FF;
+  background: #CBC4FF;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  color: #000;
+  font-family: "Pretendard Variable", sans-serif;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 170%; /* 30.6px */
+}
+
+.characterCard:hover {
+  border-color: #8B5CF6;
+  background: #B8B0FF;
+}
+
+.characterCard.selected {
+  border-color: #7560FF;
+  background: #CBC4FF;
+}
+
+.characterCard.opponent {
+  border-color: #7560FF;
+  background: #CBC4FF;
+}
+
+.characterInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.characterName {
+  font-family: "Pretendard Variable", sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #000;
+  line-height: 170%;
+}
+
+.characterRole {
+  font-family: "Pretendard Variable", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #FEFEFE;
+  background: rgba(0, 0, 0, 0.30);
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 0.5px solid #9C8CFA;
+  line-height: 150%; /* 18px */
+  letter-spacing: -0.264px;
+  text-align: center;
+}

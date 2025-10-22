@@ -1,0 +1,289 @@
+/* runPage 전체 컨테이너 */
+.container {
+  width: 100%;
+  height: 100vh;
+  min-width: 1920px;
+  min-height: 1080px;
+  background: radial-gradient(175.33% 273.27% at 53.33% 236.85%, #D0C8FF 0%, #FEFEF1 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* 1단계: 카메라 확인 페이지 */
+.cameraStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 60px;
+  gap: 40px;
+}
+
+.instructionText {
+  color: #000;
+  text-align: center;
+  font-family: "Pretendard Variable";
+  font-size: 32px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 150%; /* 48px */
+  letter-spacing: -0.704px;
+  margin: 0;
+  width: auto;
+  max-width: 1000px;
+}
+
+.cameraPreview {
+  width: 1026px;
+  height: 657px;
+  flex-shrink: 0;
+  border-radius: 20px;
+  border: 1px solid #D0C8FF;
+  background: #000;
+  position: relative;
+  overflow: hidden;
+}
+
+.cameraVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 20px;
+  transform: scaleX(-1); /* 거울 반전 (좌우 뒤집기) */
+}
+
+.faceGuide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end; /* 하단 정렬로 변경 */
+  justify-content: center;
+  padding-bottom: 20px; /* 하단에서 약간의 여백 */
+  pointer-events: none; /* 클릭 이벤트 방지 */
+}
+
+.faceGuideSvg {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+  /* SVG가 흰색이 아닌 경우를 대비해 필터 제거 */
+}
+
+.cameraError {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  z-index: 10;
+}
+
+.cameraError p {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+}
+
+.retryButton {
+  background: #7560FF;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.retryButton:hover {
+  background: #6B55E8;
+}
+
+.readyButtonContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 401px; /* startPage의 연기 시작하기 버튼과 동일한 너비 */
+}
+
+/* 2단계: 튜토리얼 페이지 */
+.tutorialStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.80), rgba(0, 0, 0, 0.80)),
+    url('/asset/png/test_img.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  color: white;
+  padding: 60px;
+  position: relative;
+}
+
+/* 배경 이미지는 background 속성으로 직접 설정됨 */
+
+.tutorialText {
+  color: #FFF;
+  text-align: center;
+  font-family: "Pretendard Variable";
+  font-size: 30px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 150%; /* 45px */
+  letter-spacing: -0.66px;
+  margin: 0 0 67px 0; /* 액션 버튼과 67px 차이 */
+}
+
+/* TutorialActionButton 컴포넌트가 사용되므로 기존 스타일 제거 */
+
+.sceneInfo {
+  position: absolute;
+  top: 60px;
+  left: 60px;
+  color: #B2B2B2;
+  font-family: "Pretendard Variable";
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 170%; /* 40.8px */
+}
+
+/* 3단계에서만 검은색으로 변경 */
+.practiceStep .sceneInfo {
+  color: #000;
+}
+
+.sceneDescription {
+  color: #FFF;
+  font-family: "Pretendard Variable";
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%; /* 27px */
+  letter-spacing: -0.396px;
+  margin-top: 8px;
+}
+
+/* TutorialButton 위치 조정 */
+.tutorialStep .tutorial-button {
+  position: absolute;
+}
+
+/* Play 버튼 - 오른쪽 위 */
+.tutorialStep .playButton {
+  top: 60px;
+  right: 60px;
+}
+
+/* CC 버튼 - 왼쪽 아래 */
+.tutorialStep .ccButton {
+  bottom: 60px;
+  left: 60px;
+}
+
+/* 애드립 모드 버튼 - CC 버튼 옆 30px */
+.tutorialStep .adlibButton {
+  bottom: 60px;
+  left: 172px; /* 60px + 82px + 30px */
+}
+
+/* 눈 버튼 - 설정 버튼 왼쪽 30px */
+.tutorialStep .eyeButton {
+  bottom: 60px;
+  right: 172px; /* 60px + 82px + 30px */
+}
+
+/* 설정 버튼 - 오른쪽 아래 */
+.tutorialStep .settingsButton {
+  bottom: 60px;
+  right: 60px;
+}
+
+/* 액션 버튼 - 중앙 */
+.tutorialStep .actionButton {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 67px;
+}
+
+/* 설명 텍스트들 제거됨 */
+
+/* 개별 버튼 위치 클래스들 */
+.playButton {
+  position: absolute !important;
+  top: 60px !important;
+  right: 60px !important;
+}
+
+.ccButton {
+  position: absolute !important;
+  bottom: 60px !important;
+  left: 60px !important;
+}
+
+.adlibButton {
+  position: absolute !important;
+  bottom: 60px !important;
+  left: 172px !important; /* 60px + 82px + 30px */
+}
+
+.eyeButton {
+  position: absolute !important;
+  bottom: 60px !important;
+  right: 172px !important; /* 60px + 82px + 30px */
+}
+
+.settingsButton {
+  position: absolute !important;
+  bottom: 60px !important;
+  right: 60px !important;
+}
+
+.actionButton {
+  position: absolute !important;
+  bottom: 50% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin-bottom: 67px !important;
+}
+
+/* 3단계: 연기 페이지 */
+.practiceStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-image: url('/asset/png/test_img.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  color: black;
+  position: relative;
+}
+
+/* 이미지 숨기기 클래스 */
+.practiceStep.hideImage {
+  background-image: none;
+}
+
+/* practiceText 스타일 제거됨 - 더 이상 사용하지 않음 */
+
+/* 배경 이미지는 background 속성으로 직접 설정됨 */

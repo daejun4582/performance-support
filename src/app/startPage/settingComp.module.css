@@ -1,0 +1,301 @@
+.container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+  height: 100%;
+}
+
+/* 1번 사각형 - 캐릭터 선택 영역 */
+.characterSection {
+  width: 293px;
+  height: 821px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  border: 1px solid #D0C8FF;
+  background: #5F5E62;
+  /* margin-left: 60px; */
+}
+
+.characterContent {
+  padding: 24px 0 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
+/* 2번 사각형 - 중앙 영역 */
+.centerSection {
+  width: 1047px;
+  height: 821px;
+  flex-shrink: 0;
+  margin-left: 30px;
+  border-radius: 16px;
+  border: 1px solid #D0C8FF;
+  background: linear-gradient(180deg, rgba(230, 230, 230, 0.31) -34.29%, rgba(114, 114, 114, 0.31) 100%);
+}
+
+/* 3번 사각형 - 설정 및 시작 버튼 영역 */
+.settingsSection {
+  width: 401px;
+  flex-shrink: 0;
+  margin-left: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* 설정 패널 */
+.settingsPanel {
+  width: 401px;
+  height: 710px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  border: 1.107px solid #D0C8FF;
+  opacity: 0.8;
+  background: rgba(255, 255, 255, 0.80);
+  padding-top: 41px;
+  padding-left: 41px;
+  padding-bottom: 41px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* 섹션 제목 */
+.sectionTitle {
+  color: #000;
+  text-align: left;
+  font-family: "Pretendard Variable";
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 170%; /* 40.8px */
+  margin-bottom: 8px;
+}
+
+
+.sectionSubtitle {
+  color: #000;
+  font-family: "Pretendard Variable";
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 130%; /* 23.4px */
+  margin: 0 0 16px 0;
+  /* margin-left: 11px; */
+}
+
+/* 얼굴 설정 */
+.faceSettings {
+  display: flex;
+  flex-direction: column;
+}
+
+.faceSettingsContent {
+  margin-left: 11px;
+}
+
+.voiceSettingsContent {
+  margin-left: 11px;
+}
+
+.imageUploadArea {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.uploadBox {
+  width: 120px;
+  height: 80px;
+  border: 2px dashed #D0C8FF;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.uploadBox:hover {
+  border-color: #A4A4FF;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.plusIcon {
+  font-size: 24px;
+  color: #D0C8FF;
+  font-weight: 300;
+}
+
+/* 목소리 설정 */
+.voiceSettings {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 슬라이더 컨테이너 */
+.sliderContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 65px;
+  padding-left: 10px;
+  margin-top: 22px;
+  margin-bottom: 10px;
+}
+
+/* 말투 버튼 컨테이너 */
+.toneButtons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 35.52px;
+}
+
+/* 음성 컨트롤 */
+.voiceControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* PerformanceSupportForm 스타일 가져오기 */
+.form-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.form-button-group {
+  display: flex;
+  gap: 8px;
+}
+
+/* 중앙 섹션 이미지 스타일 */
+.referenceImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 16px;
+}
+
+.imagePlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+}
+
+.placeholderText {
+  color: #999;
+  font-family: "Pretendard Variable";
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* 로딩 화면 스타일 */
+.loadingContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-radius: 16px;
+  border: 1px solid #D0C8FF;
+  background: linear-gradient(180deg, rgba(251, 251, 251, 0.31) 39.1%, rgba(203, 196, 255, 0.31) 80.39%);
+}
+
+/* 말풍선 */
+.speechBubble {
+  width: 239px;
+  height: 68.543px;
+  border-radius: 45px;
+  background: #D0C8FF;
+  box-shadow: 0 4px 4px 0 rgba(255, 255, 255, 0.25) inset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 70px;
+  position: relative;
+}
+
+.speechBubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid #D0C8FF;
+}
+
+.speechText {
+  color: #7560FD;
+  text-align: center;
+  font-family: Pretendard;
+  font-size: 30px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 150%; /* 45px */
+  letter-spacing: -0.66px;
+}
+
+/* 로딩 이미지 컨테이너 */
+.loadingImageContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 로딩 이미지 */
+.loadingImage {
+  width: 142px;
+  height: 175px;
+  animation: float 2s ease-in-out infinite;
+  position: relative;
+  z-index: 2;
+}
+
+/* 로딩 그림자 */
+.loadingShadow {
+  width: 60px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.44);
+  border-radius: 50%;
+  filter: blur(3.3499999046325684px);
+  margin-top: 45px; /* 최소 갭 45px로 조정 */
+  animation: shadowPulse 2s ease-in-out infinite;
+}
+
+/* 둥둥 떠다니는 애니메이션 */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-25px); /* 말풍선과 최소 70px 유지 (70px - 25px = 45px) */
+  }
+}
+
+/* 그림자 크기 변화 애니메이션 */
+@keyframes shadowPulse {
+  0%, 100% {
+    transform: scaleX(2.37); /* 이미지가 아래 있을 때 그림자가 큼 */
+    opacity: 0.8;
+  }
+  50% {
+    transform: scaleX(1); /* 이미지가 위에 있을 때 그림자가 작음 */
+    opacity: 0.6;
+  }
+}

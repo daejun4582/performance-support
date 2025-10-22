@@ -1,0 +1,126 @@
+/* ---------- 기본 리셋 ---------- */
+* {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-900);
+  min-width: 1920px;
+  min-height: 1080px;
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+/* ---------- 뷰포트 설정 ---------- */
+#__next {
+  min-width: 1920px;
+  min-height: 1080px;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow-x: auto;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+}
+
+/* ---------- 색상 변수 ---------- */
+:root {
+  /* Text + Basic (Black Scale) */
+  --text-100: #ffffff;
+  --text-200: #eeeeee;
+  --text-300: #cccccc;
+  --text-400: #999999;
+  --text-500: #777777;
+  --text-600: #555555;
+  --text-700: #333333;
+  --text-800: #1a1a1a;
+  --text-900: #000000;
+
+  /* Primary (Purple family) */
+  --primary-100: #dad4ff;
+  --primary-200: #e1e0f4;
+  --primary-300: #e7e4ff;
+  --primary-400: #bfb5ff;
+  --primary-500: #b1a5ff;
+  --primary-600: #a597ff;
+  --primary-700: #9787ff;
+  --primary-800: #8876ff;
+  --primary-900: #7560ff;
+
+  /* Accent Gradient (for buttons or QR backgrounds) */
+  --primary-gradient: linear-gradient(135deg, #5f3fff 0%, #dad4ff 100%);
+
+  /* Backgrounds */
+  --bg-main: #fefef1;
+  --bg-soft: #cbc4ff;
+  --bg-gradient: linear-gradient(135deg, #fefef1 0%, #cbc4ff 100%);
+
+  /* QR background (slightly brighter gradient) */
+  --qr-bg: linear-gradient(135deg, #f5f3ff 0%, #dad4ff 100%);
+
+  /* Whites & Neutrals */
+  --white: #ffffff;
+  --gray-light: #efefef;
+
+  
+}
+
+/* ---------- 유틸리티 ---------- */
+.text-primary {
+  color: var(--primary-700);
+}
+.bg-primary {
+  background-color: var(--primary-700);
+}
+.bg-gradient {
+  background: var(--primary-gradient);
+}
+
+.text-main { color: var(--text-900); }
+.text-sub  { color: var(--text-600); }
+
+/* 50 Bold · 50/170 */
+.t-50-bold { font-size: 50px; font-weight: 700; line-height: 1.7; letter-spacing: -0.02em; }
+
+/* 40 Bold · 40/170 */
+.t-40-bold { font-size: 40px; font-weight: 700; line-height: 1.7; letter-spacing: -0.02em; }
+
+/* 35 SemiBold · 35/170 */
+.t-35-semibold { font-size: 35px; font-weight: 600; line-height: 1.7; }
+
+/* 35 Bold · 35/170 (이미지의 35/30은 오타로 판단하여 170% 적용) */
+.t-35-bold { font-size: 35px; font-weight: 700; line-height: 1.7; }
+
+/* 32 Bold · 32/150 */
+.t-32-bold { font-size: 32px; font-weight: 700; line-height: 1.5; }
+
+/* 24 Bold · 24/170 */
+.t-24-bold { font-size: 24px; font-weight: 700; line-height: 1.7; }
+
+/* 22 SemiBold · 22/170 */
+.t-22-semibold { font-size: 22px; font-weight: 600; line-height: 1.7; }
+
+/* 20 Medium · 20/150 */
+.t-20-medium { font-size: 20px; font-weight: 500; line-height: 1.5; }
+
+/* 18 Bold · 18/170 */
+.t-18-bold { font-size: 18px; font-weight: 700; line-height: 1.7; }
+
+/* 18 SemiBold · 18/170 */
+.t-18-semibold { font-size: 18px; font-weight: 600; line-height: 1.7; }
+
+/* 18 Medium · 18/150 */
+.t-18-medium { font-size: 18px; font-weight: 500; line-height: 1.5; }
+
+/* 16 Regular · 16/130 */
+.t-16-regular { font-size: 16px; font-weight: 400; line-height: 1.3; }

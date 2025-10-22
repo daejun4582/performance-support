@@ -1,0 +1,157 @@
+/* SettingsModal 컴포넌트 스타일 */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: transparent;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.modal {
+  width: 401px;
+  height: 754px;
+  flex-shrink: 0;
+  background: #FFF;
+  border-radius: 16px;
+  border: 1px solid #7560FD;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  margin-right: 60px;
+  margin-bottom: 159px; /* 설정 버튼 위 17px */
+  pointer-events: auto;
+}
+
+.header {
+  width: 401px;
+  height: 56px;
+  flex-shrink: 0;
+  background: #5F5E62;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #E0E0E0;
+  border-radius: 16px 16px 0 0;
+}
+
+.headerText {
+  color: #FFF;
+  font-family: Pretendard;
+  font-size: 22.014px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 150%; /* 33.022px */
+  letter-spacing: -0.484px;
+  margin: 0;
+}
+
+.content {
+  flex: 1;
+  padding: 24px 24px 24px 41px;
+  overflow-y: auto;
+}
+
+.faceSettings {
+  margin-bottom: 32px;
+}
+
+.voiceSettings {
+  margin-bottom: 32px;
+}
+
+.sectionTitle {
+  color: #000;
+  text-align: left;
+  font-family: "Pretendard Variable";
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 170%; /* 40.8px */
+  margin-bottom: 8px;
+}
+
+.sectionSubtitle {
+  color: #000;
+  font-family: "Pretendard Variable";
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 130%; /* 23.4px */
+  margin-bottom: 12px;
+}
+
+.faceSettingsContent {
+  margin-bottom: 16px;
+  margin-left: 11px;
+}
+
+.imageUploadArea {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.voiceSettingsContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-left: 11px;
+}
+
+.sliderContainer {
+  margin-bottom: 15px;
+  padding-left: 11px;
+}
+
+.toneButtons {
+  margin-bottom: 8px;
+  width: 292px;
+}
+
+.voiceControls {
+  margin-top: 8px;
+}
+
+.voiceButtonGroup {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.saveButtonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.saveButton {
+  width: 185px;
+  height: 50px;
+  flex-shrink: 0;
+  background: #5F5E62;
+  border: 1px solid #6146FF;
+  border-radius: 12px;
+  color: #FFF;
+  text-align: center;
+  font-family: "Pretendard Variable";
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 170%; /* 40.8px */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.saveButton:hover {
+  background: #4A4A4E;
+}
+
+.saveButton:active {
+  background: #3D3D40;
+}

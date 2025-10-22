@@ -1,0 +1,258 @@
+/* ComponentsDemo 페이지 스타일 */
+.demo-page {
+  min-height: 100vh;
+  background: var(--bg-gradient);
+  padding: 32px 0;
+}
+
+.demo-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.demo-title {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.7;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin-bottom: 32px;
+  color: var(--text-800);
+}
+
+.demo-section {
+  margin-bottom: 48px;
+}
+
+.demo-section-title {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.7;
+  margin-bottom: 24px;
+  color: var(--text-700);
+}
+
+.demo-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+@media (min-width: 1024px) {
+  .demo-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.demo-card {
+  background-color: var(--white);
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.demo-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.7;
+  margin-bottom: 16px;
+  color: var(--text-800);
+}
+
+.demo-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.demo-card-content--horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.demo-card-row {
+  display: flex;
+  gap: 8px;
+}
+
+.demo-card-row--buttons {
+  gap: 8px;
+}
+
+.demo-card-info {
+  font-size: 14px;
+  color: var(--text-600);
+  margin-top: 8px;
+}
+
+.demo-card-wide {
+  grid-column: 1 / -1;
+}
+
+.demo-card-wide-content {
+  max-width: 400px;
+}
+
+.demo-guide {
+  background-color: var(--white);
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.demo-guide-title {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.7;
+  margin-bottom: 24px;
+  color: var(--text-700);
+}
+
+.demo-guide-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .demo-guide-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.demo-guide-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.7;
+  margin-bottom: 12px;
+  color: var(--text-800);
+}
+
+.demo-guide-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.demo-guide-item {
+  font-size: 14px;
+  color: var(--text-600);
+  line-height: 1.5;
+}
+
+.demo-guide-code {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  background-color: var(--text-200);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+/* 로딩 애니메이션 데모 스타일 */
+.loading-demo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 450px; /* 300px에서 450px로 증가 */
+  background: linear-gradient(180deg, rgba(251, 251, 251, 0.31) 39.1%, rgba(203, 196, 255, 0.31) 80.39%);
+  border-radius: 16px;
+  border: 1px solid #D0C8FF;
+}
+
+.loading-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* 말풍선 */
+.loading-speech-bubble {
+  width: 239px;
+  height: 68.543px;
+  border-radius: 45px;
+  background: #D0C8FF;
+  box-shadow: 0 4px 4px 0 rgba(255, 255, 255, 0.25) inset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 70px;
+  position: relative;
+}
+
+.loading-speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid #D0C8FF;
+}
+
+.loading-speech-text {
+  color: #7560FD;
+  text-align: center;
+  font-family: Pretendard;
+  font-size: 30px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 150%;
+  letter-spacing: -0.66px;
+}
+
+/* 로딩 이미지 컨테이너 */
+.loading-image-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 로딩 이미지 */
+.loading-image {
+  width: 142px;
+  height: 175px;
+  animation: float 2s ease-in-out infinite;
+  position: relative;
+  z-index: 2;
+}
+
+/* 로딩 그림자 */
+.loading-shadow {
+  width: 60px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.44);
+  border-radius: 50%;
+  filter: blur(3.3499999046325684px);
+  margin-top: 45px; /* 최소 갭 45px로 조정 */
+  animation: shadowPulse 2s ease-in-out infinite;
+}
+
+/* 둥둥 떠다니는 애니메이션 */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-25px); /* 말풍선과 최소 70px 유지 (70px - 25px = 45px) */
+  }
+}
+
+/* 그림자 크기 변화 애니메이션 */
+@keyframes shadowPulse {
+  0%, 100% {
+    transform: scaleX(2.37); /* 이미지가 아래 있을 때 그림자가 큼 */
+    opacity: 0.8;
+  }
+  50% {
+    transform: scaleX(1); /* 이미지가 위에 있을 때 그림자가 작음 */
+    opacity: 0.6;
+  }
+}

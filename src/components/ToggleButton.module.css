@@ -1,0 +1,75 @@
+/* ToggleButton 컴포넌트 스타일 */
+.toggle-button {
+  width: 141px;
+  height: 51px;
+  flex-shrink: 0;
+  border-radius: 72px;
+  border: 2px solid transparent;
+  background-color: #F1F1F3;
+  color: #000;
+  text-align: center;
+  font-family: "Pretendard Variable", sans-serif;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 150%; /* 30px */
+  letter-spacing: -0.44px;
+  transition: all 0.2s ease;
+  outline: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-button:hover {
+  background-color: #E8E8EA;
+}
+
+.toggle-button:focus {
+  box-shadow: 0 0 0 2px rgba(177, 165, 255, 0.2);
+}
+
+.toggle-button--selected {
+  background: rgba(117, 96, 255, 0.40);
+  border: 2px solid rgba(117, 96, 255, 0.55);
+  color: #000;
+}
+
+.toggle-button--selected:hover {
+  background: rgba(117, 96, 255, 0.50);
+}
+
+.toggle-button-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.selection-preview {
+  display: flex;
+  align-items: center;
+}
+
+.selection-preview-text {
+  font-size: 14px;
+  color: var(--text-600);
+  margin-right: 8px;
+}
+
+.selection-preview-box {
+  width: 96px;
+  height: 40px;
+  background-color: var(--primary-100);
+  border: 1px solid var(--primary-200);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.selection-preview-value {
+  font-size: 14px;
+  color: var(--primary-700);
+  font-weight: 500;
+}

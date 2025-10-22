@@ -1,0 +1,149 @@
+.navigationBar {
+    background-color: transparent;
+    /* padding: 24px 32px; */
+    border-radius: 12px;
+    margin-bottom: 32px;
+    position: relative;
+}
+
+.stepsContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2px;
+    width: 100%;
+}
+
+.step {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 8px 16px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+.step:hover:not(.disabled) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.step:hover:not(.disabled)::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--primary-700), transparent);
+    border-radius: 2px;
+    animation: glow 0.4s ease-out;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes glow {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) scaleX(0);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) scaleX(1);
+    }
+}
+
+
+.step.active .stepText {
+    color: var(--text-900);
+    font-family: Pretendard;
+    font-size: 22px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 150%;
+    /* 33px */
+    letter-spacing: -0.484px;
+}
+
+.step.inactive .stepText {
+    color: var(--text-400);
+
+    font-family: Pretendard;
+    font-size: 22px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 150%;
+    /* 33px */
+    letter-spacing: -0.484px;
+}
+
+.step.disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.step.disabled .stepText {
+    color: var(--text-200);
+    font-family: Pretendard;
+    font-size: 22px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 150%;
+    /* 33px */
+    letter-spacing: -0.484px;
+}
+
+.stepText {
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.progressContainer {
+    position: relative;
+    height: 3px;
+    width: 100%;
+    margin-top: 0;
+}
+
+.progressBackground {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background-color: #C7C7C7;
+    border-radius: 2px;
+}
+
+.progressSlider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background-color: var(--primary-700);
+    border-radius: 2px;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: left center;
+}
+
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .navigationBar {
+        padding: 16px 20px;
+    }
+
+    .stepsContainer {
+        gap: 24px;
+    }
+
+    .step.active .stepText,
+    .step.inactive .stepText {
+        font-size: 16px;
+    }
+}
