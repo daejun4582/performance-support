@@ -23,6 +23,20 @@
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  transition: transform 0.3s ease, filter 0.3s ease;
+  cursor: pointer;
+  background-color: transparent; /* ensure no bg fill */
+  filter: brightness(1) contrast(1);
+  will-change: transform, filter;
+}
+
+.logo:hover {
+  transform: scale(1.1);
+  /* Use alpha-aware shadow that respects PNG transparency */
+  filter: brightness(1.1) contrast(1.05) drop-shadow(0 8px 25px rgba(0, 0, 0, 0.2));
+  /* Remove rectangular box-shadow to avoid white-looking box */
+  /* no box-shadow here */
+  background-color: transparent;
 }
 
 /* 해상도 영역 표시
@@ -44,3 +58,8 @@
   box-sizing: border-box;
   z-index: 1;
 } */
+
+/* Next.js <Image> wraps <img> with a span; make sure wrapper has no background */
+.logoContainer :global(span) {
+  background: transparent !important;
+}

@@ -1,7 +1,16 @@
+'use client';
+
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 
 export default function LogoPage() {
+  const router = useRouter();
+
+  const handleLogoClick = () => {
+    router.push('/startPage');
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.logoContainer}>
@@ -12,6 +21,8 @@ export default function LogoPage() {
           height={200}
           priority
           className={styles.logo}
+          onClick={handleLogoClick}
+          style={{ cursor: 'pointer' }}
         />
       </div>
       
