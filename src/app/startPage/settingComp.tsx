@@ -33,17 +33,27 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
 
   // 디폴트 값은 useState 초기값으로 설정함
 
-  const handleReset = () => {
-    setSliderValue(0);
-    setSelectedPersonality(null); // 초기화 시 선택 해제
+  // 얼굴 설정만 초기화
+  const handleResetFace = () => {
     setSelectedImage(null); // 이미지 선택 해제
     setHasSelectedCustomImage(false);
     setAddThumb(null);
+    setIsLoading(false);
+    // file input 초기화
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     try {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('selectedImage');
       }
     } catch {}
+  };
+
+  // 목소리 설정만 초기화
+  const handleResetVoice = () => {
+    setSliderValue(0);
+    setSelectedPersonality(null); // 초기화 시 선택 해제
   };
 
   const handleAdd = () => { if (fileInputRef.current) fileInputRef.current.click(); };
@@ -152,7 +162,7 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
         <div className={styles.faceBox}>
           <div className={styles.sectionHeader}>
             <h3 className={styles.sectionTitle}>얼굴 설정</h3>
-            <button className={styles.resetIconBtn} onClick={handleReset} aria-label="reset"><img src="/asset/svg/reset2.svg" alt="reset" /></button>
+            <button className={styles.resetIconBtn} onClick={handleResetFace} aria-label="reset"><img src="/asset/svg/reset2.svg" alt="reset" /></button>
           </div>
           <div className={styles.faceSettingsContent}>
             <p className={styles.sectionSubtitle}>참고 이미지</p>
@@ -168,7 +178,7 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
         <div className={styles.voiceBox}>
           <div className={styles.sectionHeader}>
             <h3 className={styles.sectionTitle}>목소리 설정</h3>
-            <button className={styles.resetIconBtn} onClick={handleReset} aria-label="reset"><img src="/asset/svg/reset2.svg" alt="reset" /></button>
+            <button className={styles.resetIconBtn} onClick={handleResetVoice} aria-label="reset"><img src="/asset/svg/reset2.svg" alt="reset" /></button>
           </div>
           <div className={styles.voiceSettingsContent}>
             <p className={styles.sectionSubtitle}>피치</p>
@@ -188,7 +198,7 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
         </div>
       </div>
 
-      <ImageUploadModal isOpen={isModalOpen} onClose={handleCloseModal} onImageSelect={handleImageSelect} onReset={handleReset} />
+      <ImageUploadModal isOpen={isModalOpen} onClose={handleCloseModal} onImageSelect={handleImageSelect} onReset={handleResetFace} />
     </div>
   );
 }
