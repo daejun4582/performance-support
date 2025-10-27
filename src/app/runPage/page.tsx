@@ -137,11 +137,14 @@ export default function RunPage() {
   React.useEffect(() => {
     const loadScript = async () => {
       try {
-        // 우선순위: URL ?script => localStorage.scriptPath => 기본
+        // 우선순위: URL ?script => localStorage.scriptPath => workIndex에 따라 자동 선택
         const params = new URLSearchParams(window.location.search);
         const paramPath = params.get('script');
         const storedPath = typeof window !== 'undefined' ? localStorage.getItem('scriptPath') : null;
-        const scriptPath = paramPath || storedPath || '/scripts/script1.txt';
+        
+        // workIndex에 따라 script1.txt 또는 script2.txt 선택 (기본값 workIndex=1로 script1)
+        const scriptFileName = workIndex === 2 ? 'script2.txt' : 'script1.txt';
+        const scriptPath = paramPath || storedPath || `/scripts/${scriptFileName}`;
 
         const response = await fetch(scriptPath, { cache: 'no-store' });
         if (!response.ok) throw new Error(`Failed to fetch script: ${response.status}`);
@@ -177,7 +180,7 @@ export default function RunPage() {
     };
 
     loadScript();
-  }, []);
+  }, [workIndex]);
 
   // Apply background image from startPage selection if available
   React.useEffect(() => {

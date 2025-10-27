@@ -13,20 +13,21 @@ interface SettingCompProps {
   selectedCharacter: string;
   opponentCharacter: string;
   selectedWorkIndex: number | null;
-  onNext?: () => void; // 4단계(카메라 설정)로 이동 등 외부 전환용
+  onNext?: (personality: string, slider: number) => void; // 4단계(카메라 설정)로 이동 등 외부 전환용, personality와 slider 값 전달
 }
 
 export default function SettingComp({ selectedCharacter, opponentCharacter, selectedWorkIndex, onNext }: SettingCompProps) {
   const router = useRouter();
   const [sliderValue, setSliderValue] = React.useState(0); // 디폴트 0
-  const [selectedPersonality, setSelectedPersonality] = React.useState<string>('까칠'); // 디폴트 '까칠'
+  const [selectedPersonality, setSelectedPersonality] = React.useState<string | null>(null); // 초기값: 선택되지 않음
   const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [selectedImage, setSelectedImage] = React.useState<string | null>('/asset/png/work1_default_img.png'); // 디폴트 이미지
+  const [selectedImage, setSelectedImage] = React.useState<string | null>(null); // 초기값: null (사용자가 선택한 이미지)
+  const [hasSelectedCustomImage, setHasSelectedCustomImage] = React.useState(false); // 사용자가 커스텀 이미지를 선택했는지 추적
   const [isLoading, setIsLoading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [addThumb, setAddThumb] = React.useState<string | null>(null);
 
-  const isImageSettingComplete = selectedImage !== null && !isLoading;
+  const isImageSettingComplete = !isLoading; // 이미지 선택 여부와 관계없이 로딩만 확인
   const isVoiceSettingComplete = true; // 디폴트 제공으로 항상 OK
   const isAllSettingsComplete = true; // 디폴트 값으로 바로 진행 가능
 
@@ -34,12 +35,13 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
 
   const handleReset = () => {
     setSliderValue(0);
-    setSelectedPersonality('까칠');
-    setSelectedImage('/asset/png/work1_default_img.png');
+    setSelectedPersonality(null); // 초기화 시 선택 해제
+    setSelectedImage(null); // 이미지 선택 해제
+    setHasSelectedCustomImage(false);
     setAddThumb(null);
     try {
       if (typeof window !== 'undefined') {
-        localStorage.setItem('selectedImage', '/asset/png/work1_default_img.png');
+        localStorage.removeItem('selectedImage');
       }
     } catch {}
   };
@@ -55,6 +57,7 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
       setAddThumb(result);
       setIsLoading(true);
       setSelectedImage('/asset/png/work1_girl.png');
+      setHasSelectedCustomImage(true);
       setTimeout(() => setIsLoading(false), 3000);
       try {
         if (typeof window !== 'undefined') {
@@ -69,6 +72,7 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
     setAddThumb(imageUrl);
     setIsLoading(true);
     setSelectedImage('/asset/png/work1_girl.png');
+    setHasSelectedCustomImage(true);
     setTimeout(() => { setIsLoading(false); }, 3000);
     try {
       if (typeof window !== 'undefined') {
@@ -82,15 +86,27 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
   const handleApply = () => { console.log('Apply clicked'); };
 
   const handleStartPractice = () => {
+    // personality가 선택되지 않았으면 기본값 '까칠'로 설정
+    const finalPersonality = selectedPersonality || '까칠';
+    
+    // 사용자가 커스텀 이미지를 선택하지 않았으면 localStorage에서 제거
+    if (!hasSelectedCustomImage) {
+      try {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('selectedImage');
+        }
+      } catch {}
+    }
+    
     // 외부에서 단계 전환을 처리하도록 콜백이 제공되면 사용
     if (onNext) {
-      onNext();
+      onNext(finalPersonality, sliderValue);
       return;
     }
     const params = new URLSearchParams({
       selectedCharacter,
       opponentCharacter,
-      selectedPersonality,
+      selectedPersonality: finalPersonality,
       sliderValue: sliderValue.toString(),
       workIndex: selectedWorkIndex?.toString() || '1' // 작품 인덱스 전달
     });
@@ -127,10 +143,8 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
               <div className={styles.loadingShadow}></div>
             </div>
           </div>
-        ) : selectedImage ? (
-          <img src={selectedImage} alt="참고 이미지" className={styles.referenceImage} />
         ) : (
-          <div className={styles.imagePlaceholder}><span className={styles.placeholderText}>이미지를 선택해주세요</span></div>
+          <img src={selectedImage || '/asset/png/work1_default_img.png'} alt="참고 이미지" className={styles.referenceImage} />
         )}
       </div>
 
@@ -160,7 +174,7 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
             <p className={styles.sectionSubtitle}>피치</p>
             <div className={styles.sliderContainer}><Slider value={sliderValue} onChange={setSliderValue} min={-2} max={2} step={1} marks={[-2, 0, 2]} /></div>
             <p className={styles.sectionSubtitle}>말투 프롬프트</p>
-            <div className={styles.toneButtons}><ToggleButtonGroup options={['까칠', '다정']} selectedOption={selectedPersonality} onSelect={setSelectedPersonality} /></div>
+            <div className={styles.toneButtons}><ToggleButtonGroup options={['까칠', '다정']} selectedOption={selectedPersonality || undefined} onSelect={setSelectedPersonality} /></div>
             <div className={`${styles.voiceControls} ${styles['form-actions']}`}>
               <div className={styles['form-button-group']}>
                 <PreviewButton onClick={handlePreview} />

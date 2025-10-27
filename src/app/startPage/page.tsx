@@ -43,6 +43,9 @@ export default function StartPage() {
   const [cameraStream, setCameraStream] = React.useState<MediaStream | null>(null);
   const [cameraError, setCameraError] = React.useState<string | null>(null);
   const videoRef = React.useRef<HTMLVideoElement | null>(null);
+  // Setting 값 저장
+  const [personalityValue, setPersonalityValue] = React.useState<string>('까칠');
+  const [sliderValue, setSliderValue] = React.useState<number>(0);
   
   // 현재 단계보다 앞의 단계들은 비활성화
   const disabledSteps = Array.from({ length: currentStep + 1 }, (_, i) => i).filter(step => step > currentStep);
@@ -479,12 +482,12 @@ export default function StartPage() {
                     (videoRef.current as any).srcObject = null;
                   }
                 } catch {}
-                // URL 파라미터 전달
+                // URL 파라미터 전달 (SettingComp에서 저장한 값 사용)
                 const params = new URLSearchParams({
                   selectedCharacter: selectedCharacter || '',
                   opponentCharacter: '',
-                  selectedPersonality: '',
-                  sliderValue: '0',
+                  selectedPersonality: personalityValue,
+                  sliderValue: sliderValue.toString(),
                   workIndex: selectedWorkIndex?.toString() || '1'
                 });
                 router.push(`/runPage?${params.toString()}`);
@@ -494,14 +497,22 @@ export default function StartPage() {
         )}
 
         {/* 상대역 설정 단계 */}
-        {currentStep === 2 && selectedCharacter && (
+        {currentStep === 2 && selectedCharacter && selectedWorkIndex !== null && (
           <div className={styles.settingRow}>
             <div className={`${showSettingAnimation ? styles.settingSlideIn : ''}`}>
               <SettingComp 
                 selectedCharacter={selectedCharacter}
-                opponentCharacter={selectedCharacter === '강모연' ? '유시진' : '강모연'}
+                opponentCharacter={
+                  selectedCharacter === WORKS[selectedWorkIndex - 1].characters.male
+                    ? WORKS[selectedWorkIndex - 1].characters.female
+                    : WORKS[selectedWorkIndex - 1].characters.male
+                }
                 selectedWorkIndex={selectedWorkIndex}
-                onNext={() => {
+                onNext={(personality, slider) => {
+                  // personality와 slider 값 저장
+                  setPersonalityValue(personality);
+                  setSliderValue(slider);
+                  
                   // 4단계(카메라 설정)로 전환
                   setCurrentStep(3);
                   // 카메라 초기화 시도
