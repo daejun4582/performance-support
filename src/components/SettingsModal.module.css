@@ -65,6 +65,12 @@
   margin-bottom: 32px;
 }
 
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .sectionTitle {
   color: #000;
   text-align: left;
@@ -74,6 +80,14 @@
   font-weight: 700;
   line-height: 170%; /* 40.8px */
   margin-bottom: 8px;
+}
+
+.resetIconBtn {
+  width: 29px;
+  height: 29px;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
 .sectionSubtitle {
@@ -97,10 +111,26 @@
   align-items: center;
 }
 
+.addButtonWrap {
+  position: relative;
+  width: 137px;
+  height: 82px;
+}
+
+.addThumbOverlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  pointer-events: none;
+}
+
 .voiceSettingsContent {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 30px;
   margin-left: 11px;
 }
 

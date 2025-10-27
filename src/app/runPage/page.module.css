@@ -123,9 +123,9 @@
   justify-content: center;
   width: 100%;
   height: 100%;
-  background-image: 
+  background-image:
     linear-gradient(rgba(0, 0, 0, 0.80), rgba(0, 0, 0, 0.80)),
-    url('/asset/png/test_img.png');
+    var(--practice-bg, url('/asset/png/work1_default_img.png'));
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center bottom;
@@ -263,6 +263,38 @@
   margin-bottom: 67px !important;
 }
 
+/* Countdown overlay */
+.countdownOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 50;
+  background: linear-gradient(rgba(0, 0, 0, 0.80), rgba(0, 0, 0, 0.80));
+}
+.countNumber {
+  color: #7560FF;
+  text-align: center;
+  font-family: "Pretendard Variable";
+  font-size: 200px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 150%; /* 300px */
+  letter-spacing: -4.4px;
+}
+.actionText {
+  color: #FFF;
+  text-align: center;
+  font-family: "Pretendard Variable";
+  font-size: 200px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 150%; /* 300px */
+  letter-spacing: -4.4px;
+}
+
 /* 3단계: 연기 페이지 */
 .practiceStep {
   display: flex;
@@ -271,7 +303,7 @@
   justify-content: center;
   width: 100%;
   height: 100%;
-  background-image: url('/asset/png/test_img.png');
+  background-image: var(--practice-bg, url('/asset/png/work1_default_img.png'));
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center bottom;
@@ -284,6 +316,424 @@
   background-image: none;
 }
 
+/* 차례 표시 */
+.turnIndicator {
+  position: absolute;
+  top: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+.turnBadge {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-family: "Pretendard Variable";
+  font-size: 16px;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  animation: pulse 2s infinite;
+}
+
+.turnBadgeAi {
+  background: rgba(59, 130, 246, 0.9);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.turnBadgeUser {
+  background: rgba(34, 197, 94, 0.9);
+  border-color: rgba(34, 197, 94, 0.5);
+}
+
+.turnBadgeWaiting {
+  background: rgba(156, 163, 175, 0.9);
+  border-color: rgba(156, 163, 175, 0.5);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* 자막 컨테이너 */
+.subtitleContainer {
+  position: absolute;
+  top: 270px; /* 상단 기준 270px 아래 */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  max-width: 1200px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  justify-content: center;
+}
+
+/* 자막 기본 스타일 */
+.subtitle {
+  color: #FFF;
+  text-align: center;
+  font-feature-settings: 'liga' off, 'clig' off;
+  text-shadow: 4.529px 4.529px 4.529px rgba(0, 0, 0, 0.55);
+  font-family: Pretendard;
+  font-size: 80px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 70px; /* 87.5% */
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  white-space: nowrap;
+  /* overflow: hidden; */
+  text-overflow: ellipsis;
+}
+
+/* AI 자막 스타일 */
+.subtitleAi {
+  color: #ffffff;
+}
+
+/* 사용자 부분 자막 스타일 (회색) */
+.subtitleUserPartial {
+  color: #cccccc;
+}
+
+/* 사용자 완료 자막 스타일 (강조) */
+.subtitleUserFinal {
+  color: #FFF;
+}
+
+/* 상단 오버레이 바 (내/상대) */
+.topOverlayMe,
+.topOverlayOpp {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 553px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+/* 내 차례: 녹음 중일 때 애니메이션 있음 */
+.topOverlayMe {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.40) 0%, rgba(255, 255, 255, 0.00) 85.89%);
+  animation: pulseRecording 2s ease-in-out infinite;
+}
+
+/* 내 차례: 녹음 결과 확인 중일 때 (애니메이션 없음) */
+.topOverlayMeStopped {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 553px;
+  flex-shrink: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.40) 0%, rgba(255, 255, 255, 0.00) 85.89%);
+}
+
+.topOverlayOpp {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.40) 0%, rgba(255, 255, 255, 0.00) 85.89%);
+}
+
+/* 녹음 중 애니메이션 - 일렁이는 효과 */
+@keyframes pulseRecording {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* 좌측 배지: 나/상대 표시 */
+.leftBadgeMe {
+  position: relative;
+  width: 108.706px;
+  height: 77px;
+  border-radius: 9.059px;
+  border: 3.397px solid rgba(117, 96, 255, 0.60);
+  background: #7560FF;
+  flex-shrink: 0;
+  color: #FFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-feature-settings: 'liga' off, 'clig' off;
+  -webkit-text-stroke-width: 2.26px;
+  -webkit-text-stroke-color: rgba(117, 96, 255, 0.60);
+  font-family: Pretendard;
+  font-size: 45px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 49.824px; /* 110.719% */
+}
+
+.leftBadgeOpp {
+  position: relative;
+  width: 167.294px;
+  height: 79px;
+  border-radius: 9.294px;
+  border: 3.485px solid rgba(114, 97, 244, 0.60);
+  background: rgba(114, 97, 244, 0.40);
+  color: #FFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-feature-settings: 'liga' off, 'clig' off;
+  font-family: Pretendard;
+  font-size: 45px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 51.118px; /* 113.595% */
+  flex-shrink: 0;
+}
+
+/* 수동 진행 버튼 */
+.manualControl {
+  position: absolute;
+  bottom: 200px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 80%;
+  max-width: 800px;
+}
+
+.userCueText {
+  background: rgba(0, 0, 0, 0.9);
+  color: #fbbf24;
+  padding: 20px 30px;
+  border-radius: 15px;
+  font-family: "Pretendard Variable";
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.5;
+  border: 2px solid rgba(251, 191, 36, 0.3);
+  box-shadow: 0 4px 20px rgba(251, 191, 36, 0.2);
+  backdrop-filter: blur(8px);
+}
+
+.recordingIndicator {
+  background: rgba(0, 0, 0, 0.8);
+  color: #ef4444;
+  padding: 12px 24px;
+  border-radius: 20px;
+  font-family: "Pretendard Variable";
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  border: 2px solid rgba(239, 68, 68, 0.3);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+  backdrop-filter: blur(8px);
+  animation: pulse 1.5s infinite;
+}
+
+.nextButton {
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 25px;
+  font-family: "Pretendard Variable";
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(74, 222, 128, 0.3);
+  transition: all 0.3s ease;
+}
+
+.nextButton:hover {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(74, 222, 128, 0.4);
+}
+
+.nextButton:active {
+  transform: translateY(0);
+}
+
+.userTranscript {
+  background: rgba(0, 0, 0, 0.9);
+  color: #4ade80;
+  padding: 16px 24px;
+  border-radius: 15px;
+  font-family: "Pretendard Variable";
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.5;
+  border: 2px solid rgba(74, 222, 128, 0.3);
+  box-shadow: 0 4px 20px rgba(74, 222, 128, 0.2);
+  backdrop-filter: blur(8px);
+  max-width: 600px;
+  word-wrap: break-word;
+}
+
+.startRecordingButton {
+  background: #4ade80;
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 15px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 18px;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3);
+}
+
+.startRecordingButton:hover {
+  background: #22c55e;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(74, 222, 128, 0.4);
+}
+
+.stopRecordingButton {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 15px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 18px;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.stopRecordingButton:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+.confirmButton {
+  background: #7560FF;
+  color: white;
+  border: none;
+  padding: 16px 48px;
+  border-radius: 15px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 20px;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(117, 96, 255, 0.3);
+}
+
+.confirmButton:hover {
+  background: #6349d6;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(117, 96, 255, 0.4);
+}
+
+.similarityScore {
+  background: rgba(117, 96, 255, 0.9);
+  color: white;
+  padding: 12px 32px;
+  border-radius: 12px;
+  font-family: "Pretendard Variable";
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(117, 96, 255, 0.4);
+  backdrop-filter: blur(8px);
+}
+
 /* practiceText 스타일 제거됨 - 더 이상 사용하지 않음 */
 
 /* 배경 이미지는 background 속성으로 직접 설정됨 */
+
+/* Tutorial icon wrappers and backgrounds */
+.iconWrap {
+  position: absolute;
+}
+.iconBox {
+  width: 82px;
+  height: 82px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.7); /* #FFFFFFB2 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.iconBoxSettings {
+  background: rgba(255, 255, 255, 0.7); /* ensure same bg as others */
+  border: 1px solid #D0C8FF; /* match previous border */
+}
+.iconImg {
+  display: block;
+}
+.arrowLeft {
+  position: absolute;
+  top: 50%;
+  right: calc(80px);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.arrowTop {
+  position: absolute;
+  bottom: calc(79px);
+  left: 50%;
+  transform: translateX(-65%);
+  pointer-events: none;
+}
+
+/* Special alignment for mode/adlib arrow (left end meets icon center) */
+.arrowLeftEnd {
+  position: absolute;
+  top: 50%;
+  left: calc(-12px); /* small gap from icon box */
+  transform: translate(80%, -150%); /* align arrow's right end to icon center line */
+  pointer-events: none;
+}
+
+.arrowScene{
+  margin-left: 30px;
+}
+
+/* Special alignment for view_img arrow (right end meets icon center) */
+.arrowRightEnd {
+  position: absolute;
+  top: 50%;
+  right: calc(-12px); /* small gap from icon box */
+  transform: translate(-43%, -155%); /* align arrow's left end to icon center line */
+  pointer-events: none;
+}
+
+/* Icon label text */
+.iconLabel {
+  color: #FFF;
+  font-family: "Pretendard Variable";
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%; /* 27px */
+  letter-spacing: -0.396px;
+  white-space: nowrap;
+}
+
+/* Default absolute placements for labels (tuned to current layout) */
+.labelPlay { position: absolute; top: 28px; right: 220px;}
+.labelCC { position: absolute; bottom: 170px; left: 32.5px; }
+.labelAdlib { position: absolute; bottom: 170px; left: 260px; }
+.labelView { position: absolute; bottom: 132.5px; right: 175px; }
+.labelSettings { position: absolute; bottom: 170px; right: 40px; }
+.labelModeConver { position: absolute; bottom: 120px; left: 210px; }

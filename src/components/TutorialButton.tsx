@@ -79,7 +79,7 @@ export const TutorialActionButton: React.FC<TutorialActionButtonProps> = ({
       onClick={onClick}
       className={buttonClasses}
     >
-      액션!
+      Ready
     </button>
   );
 };

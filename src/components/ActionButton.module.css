@@ -100,12 +100,12 @@
 
 /* Preview 버튼 스타일 */
 .action-button--preview {
-  border-radius: 8px;
-  border: 1px solid #CBC4FF;
-  background: #E7E4FF;
-  width: 171px;
+  width: 137px;
   height: 82px;
   flex-shrink: 0;
+  border-radius: 8px;
+  border: 1px solid #CBC4FF;
+  background: #F5F3FB;
   color: #7560FF;
   text-align: center;
   font-family: "Pretendard Variable";
@@ -134,16 +134,16 @@
 
 /* Apply 버튼 스타일 */
 .action-button--apply {
-  border-radius: 10.795px;
-  border: 0.9px solid #6146FF;
-  background: #7560FF;
-  width: 250.983px;
-  height: 64.77px;
+  width: 292px;
+  height: 82px;
   flex-shrink: 0;
+  border-radius: 10px;
+  background: #7560FF;
   color: #FFFFFF;
   font-family: "Pretendard Variable", sans-serif;
   font-size: 18px;
   font-weight: 600;
+  border: none;
 }
 
 .action-button--apply:hover:not(.action-button--disabled) {

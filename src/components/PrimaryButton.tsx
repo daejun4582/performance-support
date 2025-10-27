@@ -25,7 +25,7 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
     className
   ].filter(Boolean).join(' ');
 
-  const playIconSrc = variant === 'primary' ? '/asset/svg/white-play.svg' : '/asset/svg/purple-play.svg';
+  const nextIconSrc = '/asset/svg/next_sign.svg';
 
   return (
     <button
@@ -34,12 +34,8 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
       disabled={disabled}
       className={buttonClasses}
     >
-      <img 
-        src={playIconSrc} 
-        alt="재생" 
-        className={styles['play-icon']}
-      />
       {children}
+      <img src={nextIconSrc} alt="next" className={styles['next-icon']} />
     </button>
   );
 };
@@ -63,7 +59,7 @@ export const PracticeStartButton: React.FC<PracticeStartButtonProps> = ({
       disabled={disabled}
       className={className}
     >
-      연습 시작하기
+      다음으로
     </PrimaryButton>
   );
 };

@@ -9,10 +9,11 @@
 /* 1번 사각형 - 캐릭터 선택 영역 */
 .characterSection {
   width: 293px;
-  height: 821px;
+  height: 710px;
   flex-shrink: 0;
-  border-radius: 16px;
+  border-radius: 16px 0 0 16px; /* 좌측만 라운드 */
   border: 1px solid #D0C8FF;
+  border-right: none; /* 접점 경계선 제거 */
   background: #5F5E62;
   /* margin-left: 60px; */
 }
@@ -25,14 +26,65 @@
   height: 100%;
 }
 
+/* Supporting role chips under the left first box */
+.supportingChips {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chipWrapper {
+  position: relative;
+  width: 258px;
+  height: 62px;
+}
+
+.chip {
+  width: 258px;
+  height: 62px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  border: 1px solid #8580AC;
+background: #E7E4FF;
+  display: flex;
+  align-items: center;
+  padding-left: 16px;
+  box-sizing: border-box;
+}
+
+.chipOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 258px;
+  height: 62px;
+  border-radius: 9px;
+  border: 1px solid #8580AC;
+  background: rgba(0, 0, 0, 0.50);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.chipText {
+  position: relative;
+  z-index: 11;
+  color: #393939;
+  font-family: "Pretendard Variable";
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 170%; /* 30.6px */
+}
+
 /* 2번 사각형 - 중앙 영역 */
 .centerSection {
   width: 1047px;
-  height: 821px;
+  height: 710px;
   flex-shrink: 0;
-  margin-left: 30px;
-  border-radius: 16px;
+  margin-left: 0;
+  border-radius: 0 16px 16px 0; /* 우측만 라운드 */
   border: 1px solid #D0C8FF;
+  border-left: none; /* 접점 경계선 제거 */
   background: linear-gradient(180deg, rgba(230, 230, 230, 0.31) -34.29%, rgba(114, 114, 114, 0.31) 100%);
 }
 
@@ -43,25 +95,36 @@
   margin-left: 30px;
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 20px;
 }
 
 /* 설정 패널 */
-.settingsPanel {
+.faceBox {
   width: 401px;
-  height: 710px;
+  height: 239px;
   flex-shrink: 0;
-  border-radius: 16px;
+  border-radius: 10px;
   border: 1.107px solid #D0C8FF;
   opacity: 0.8;
   background: rgba(255, 255, 255, 0.80);
-  padding-top: 41px;
-  padding-left: 41px;
-  padding-bottom: 41px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  padding: 40px;
+  box-sizing: border-box;
 }
+
+.voiceBox {
+  width: 400px;
+  height: 448px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  border: 1.107px solid #D0C8FF;
+  opacity: 0.8;
+  background: rgba(255, 255, 255, 0.80);
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+/* '다음으로' 버튼과 목소리 설정 박스 간격 */
+.settingsSection + .startButtonGap { margin-top: 42px; }
 
 /* 섹션 제목 */
 .sectionTitle {
@@ -73,6 +136,31 @@
   font-weight: 700;
   line-height: 170%; /* 40.8px */
   margin-bottom: 8px;
+}
+
+/* 제목 + 우측 리셋 아이콘 영역 */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* padding-right: 32px; 오른쪽 끝과 32px 갭 */
+}
+
+.resetIconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 29px;
+  height: 29px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.resetIconBtn img {
+  width: 29px;
+  height: 29px;
 }
 
 
@@ -94,17 +182,28 @@
 }
 
 .faceSettingsContent {
-  margin-left: 11px;
+  margin-left: 15px;
 }
 
 .voiceSettingsContent {
-  margin-left: 11px;
+  margin-left: 15px;
 }
 
 .imageUploadArea {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.addButtonWrap { position: relative; }
+.addThumbOverlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  pointer-events: none;
 }
 
 .uploadBox {
@@ -152,7 +251,7 @@
 .toneButtons {
   display: flex;
   gap: 8px;
-  margin-bottom: 35.52px;
+  margin-bottom: 30px;
 }
 
 /* 음성 컨트롤 */
@@ -160,6 +259,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  justify-content: center; /* 미리듣기 버튼 가운데 정렬 */
 }
 
 /* PerformanceSupportForm 스타일 가져오기 */

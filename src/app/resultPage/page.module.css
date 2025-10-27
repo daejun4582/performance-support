@@ -29,9 +29,10 @@
   height: 739px;
   flex-shrink: 0;
   background: linear-gradient(180deg, #F5F3FF -17.13%, #DAD4FF 71.65%);
-  padding: 150px 0 0 115px;
+  padding: 115px 0 0 115px;
   display: flex;
   flex-direction: column;
+  gap: 40px;
   box-sizing: border-box;
 }
 
@@ -44,7 +45,7 @@
   font-weight: 700;
   line-height: 150%; /* 48px */
   letter-spacing: -0.704px;
-  margin: 0 0 80px 0;
+  margin: 0;
 }
 
 /* QR 코드 컨테이너 */
@@ -98,6 +99,20 @@
   box-sizing: border-box;
 }
 
+.infoBox2 {
+  width: 512px;
+  height: 127px;
+  flex-shrink: 0;
+  border-radius: 20px;
+  /* border: 1.511px solid #CBC4FF; */
+  background: rgba(251, 250, 255, 0.94);
+  padding: 24px 54px 24px 35px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
 /* 정보 헤더 */
 .infoHeader {
   display: flex;
@@ -140,16 +155,14 @@
 
 /* 상세 정보 박스 */
 .detailBox {
-  width: 519px;
-  height: 215px;
-  flex-shrink: 0;
+  width: 300px;
   border-radius: 20px;
   border: 1.511px solid #D9D9D9;
   background: rgba(255, 255, 255, 0.80);
-  padding: 55px 54px;
+  padding: 24px 30px;
   display: flex;
   flex-direction: column;
-  gap: 42px;
+  gap: 20px;
   box-sizing: border-box;
 }
 
@@ -157,18 +170,19 @@
 .detailItem {
   display: flex;
   align-items: center;
-  gap: 85px;
+  gap: 20px;
 }
 
 /* 상세 정보 라벨 */
 .detailLabel {
   color: #7560FF;
-  text-align: center;
+  /* text-align: center; */
   font-family: "Pretendard Variable";
   font-size: 18px;
   font-style: normal;
   font-weight: 700;
   line-height: 130%; /* 23.4px */
+  /* width: 110px; */
 }
 
 /* 상세 정보 값 */
@@ -179,6 +193,7 @@
   font-style: normal;
   font-weight: 600;
   line-height: 170%; /* 37.4px */
+  flex: 1;
 }
 
 /* 연습 종료하기 버튼 */
@@ -215,4 +230,83 @@
   font-weight: 700;
   line-height: 150%; /* 48px */
   letter-spacing: -0.704px;
+}
+
+/* 각 대사별 정확도 리스트 */
+.dialogueList {
+  width: 512px;
+  height: 376px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  border: 1.511px solid #CBC4FF;
+  background: rgba(251, 250, 255, 0.94);
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dialogueListTitle {
+  color: #7560FF;
+  font-family: "Pretendard Variable";
+  font-size: 18px;
+  font-weight: 700;
+  margin: 20px 20px 15px 20px;
+}
+
+.dialogueItems {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 20px 20px 20px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dialogueItem {
+  background: transparent;
+  border-radius: 8px;
+  padding: 0;
+  border: none;
+  border-bottom: 1px solid #E0E0E0;
+  padding-bottom: 8px;
+}
+
+.dialogueItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.dialogueItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.dialogueItemLabel {
+  color: #000;
+  font-family: "Pretendard Variable";
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.dialogueItemScript {
+  color: #000;
+  font-family: "Pretendard Variable";
+  font-size: 19.051px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 170%; /* 32.387px */
+}
+
+.dialogueItemAccuracy {
+  color: #7560FF;
+  text-align: right;
+  font-family: "Pretendard Variable";
+  font-size: 19.051px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 170%; /* 32.387px */
 }

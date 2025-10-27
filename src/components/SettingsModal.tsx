@@ -37,17 +37,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onImageReset
 }) => {
   const [isImageModalOpen, setIsImageModalOpen] = React.useState(false);
+  const [addThumb, setAddThumb] = React.useState<string | null>(null); // startPage 3단계와 동일
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   if (!isOpen) return null;
 
   const handleAdd = () => {
-    setIsImageModalOpen(true);
+    // startPage처럼 시스템 파일 피커 바로 열기
+    if (fileInputRef.current) fileInputRef.current.click();
   };
 
   const handleReset = () => {
+    // startPage 3단계와 동일 동작
     setSliderValue(0);
-    setSelectedPersonality('');
+    setSelectedPersonality('까칠');
+    setAddThumb(null);
     onImageReset();
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('selectedImage', '/asset/png/work1_default_img.png');
+      }
+    } catch {}
   };
 
   const handlePreview = () => {
@@ -55,8 +65,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   const handleImageSelect = (imageUrl: string) => {
-    onImageSelect(imageUrl);
+    setAddThumb(imageUrl);
+    onImageSelect('/asset/png/work1_girl.png');
     setIsImageModalOpen(false);
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('selectedImage', '/asset/png/work1_girl.png');
+      }
+    } catch {}
   };
 
   const handleCloseImageModal = () => {
@@ -76,19 +92,48 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className={styles.content}>
             {/* 얼굴 설정 */}
             <div className={styles.faceSettings}>
-              <h3 className={styles.sectionTitle}>얼굴 설정</h3>
+              <div className={styles.sectionHeader}>
+                <h3 className={styles.sectionTitle}>얼굴 설정</h3>
+                <button className={styles.resetIconBtn} onClick={handleReset} aria-label="reset">
+                  <img src="/asset/svg/reset2.svg" alt="reset" width={29} height={29} />
+                </button>
+              </div>
               <div className={styles.faceSettingsContent}>
                 <p className={styles.sectionSubtitle}>참고 이미지</p>
                 <div className={styles.imageUploadArea}>
-                  <AddButton onClick={handleAdd} size="small" />
-                  <ResetButton onClick={handleReset} size="reset-small" />
+                  <div className={styles.addButtonWrap}>
+                    <AddButton onClick={handleAdd} size="small" />
+                    {addThumb && <img className={styles.addThumbOverlay} src={addThumb} alt="썸네일" />}
+                  </div>
+                  <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => {
+                    const file = e.target.files && e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      // startPage 3단계와 동일: 업로드한 이미지는 work1_girl.png로 변환
+                      const result = reader.result as string;
+                      setAddThumb(result);
+                      onImageSelect('/asset/png/work1_girl.png');
+                      try {
+                        if (typeof window !== 'undefined') {
+                          localStorage.setItem('selectedImage', '/asset/png/work1_girl.png');
+                        }
+                      } catch {}
+                    };
+                    reader.readAsDataURL(file);
+                  }} />
                 </div>
               </div>
             </div>
 
             {/* 목소리 설정 */}
             <div className={styles.voiceSettings}>
-              <h3 className={styles.sectionTitle}>목소리 설정</h3>
+              <div className={styles.sectionHeader}>
+                <h3 className={styles.sectionTitle}>목소리 설정</h3>
+                <button className={styles.resetIconBtn} onClick={handleReset} aria-label="reset">
+                  <img src="/asset/svg/reset2.svg" alt="reset" width={29} height={29} />
+                </button>
+              </div>
               <div className={styles.voiceSettingsContent}>
                 <p className={styles.sectionSubtitle}>피치</p>
                 <div className={styles.sliderContainer}>
@@ -111,12 +156,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   />
                 </div>
                 
-                <div className={styles.voiceControls}>
-                  <div className={styles.voiceButtonGroup}>
-                    <PreviewButton onClick={handlePreview} />
-                    <ResetButton onClick={handleReset} size="reset-small" />
-                  </div>
-                </div>
+                <div className={styles.voiceControls}></div>
               </div>
             </div>
             

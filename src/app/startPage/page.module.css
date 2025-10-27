@@ -12,6 +12,18 @@
 .container--settingBg {
     background: radial-gradient(175.33% 273.27% at 53.33% 236.85%, #D0C8FF 0%, #FEFEF1 100%);
 }
+.cameraInstruction {
+  color: #000;
+  text-align: center;
+  font-family: "Pretendard Variable";
+  font-size: 32px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 150%; /* 48px */
+  letter-spacing: -0.704px;
+  width: 1047px;
+  margin: 25px auto 0;
+}
 
 /* 1920px 이상에서 컨테이너 최대 너비 제한 */
 @media (min-width: 1920px) {
@@ -26,24 +38,24 @@
     top: 0;
     left: 0;
     z-index: 10;
-    width: 400px;
+    width: 480px;
     margin: 60px 0 0 60px;
     background: transparent;
 }
 
 /* 1920px 이상에서 네비게이션 위치 조정 */
-@media (min-width: 1920px) {
+/* @media (min-width: 1920px) {
     .navigationSection {
         margin-left: calc(60px + (100vw - 1920px) / 2);
     }
-}
+} */
 
 /* 2560px 이상에서 더 큰 조정 */
-@media (min-width: 2560px) {
+/* @media (min-width: 2560px) {
     .navigationSection {
         margin-left: calc(60px + (100vw - 1920px) / 2);
     }
-}
+} */
 
 .title {
     /* margin-bottom: 24px; */
@@ -65,13 +77,42 @@
   gap: 30px;
   width: 100%;
   height: 100%;
+  min-height: 0; /* allow children to scroll in nested flex (iOS) */
   padding: 200px 60px 60px 60px;
   box-sizing: border-box;
+}
+
+/* 최초 단계(작품 슬라이더) 전용 레이아웃 - 네비게이션 아래 115px, 좌측 여백 0 (컨테이너에서 처리) */
+.mainContent--works {
+  padding: 0 0 60px 0;
+}
+
+/* Ensure overrides also apply at wider viewports */
+.mainContent.mainContent--works {
+  padding-top: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* 선택된 작품(단계 1)에서 왼쪽 정렬로 네비게이션과 좌측 간격 유지 */
+.mainContent--selection {
+  justify-content: flex-start;
+  padding-top: 115px;
 }
 
 /* 3단계(상대역 설정)에서 padding-top 제거 */
 .mainContent--noTopPadding {
   padding-top: 0;
+}
+
+/* Step 3 row offset to reduce left gap to 60px */
+.settingRow {
+  /* margin-left: -80px; */
+}
+
+.mainContent.mainContent--step2 {
+  padding-left: 60px;
+  /* padding-right: 60px; */
 }
 
 /* 설정 컴포넌트 등장 애니메이션 */
@@ -100,7 +141,163 @@
     padding-left: calc(60px + (100vw - 1920px) / 2);
     padding-right: calc(60px + (100vw - 1920px) / 2);
   }
+  .mainContent.mainContent--works {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .mainContent.mainContent--step2 {
+    padding-left: 60px;
+    /* padding-right: 60px; */
+  }
+  .worksScroll {
+    padding-left: calc(60px + (100vw - 1920px) / 2);
+    scroll-padding-left: calc(60px + (100vw - 1920px) / 2);
+  }
 }
+
+/* 작품 가로 스크롤 영역 */
+.worksScroll {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  touch-action: pan-x pinch-zoom; /* ensure horizontal pans work on tablets */
+  overscroll-behavior-x: contain; /* prevent chaining to viewport */
+  margin-top: 115px;
+  padding-left: 60px;
+  scroll-padding-left: 60px;
+  width: 100%;
+  box-sizing: border-box;
+  cursor: grab;
+  user-select: none;
+}
+
+.worksScroll.dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+}
+
+.worksScroll::-webkit-scrollbar { height: 10px; }
+.worksScroll::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.15);
+  border-radius: 10px;
+}
+
+/* Hide horizontal scrollbar across browsers */
+.worksScroll {
+  scrollbar-width: none; /* Firefox */
+}
+.worksScroll::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* 작품 카드 */
+.workCard {
+  width: 760px;
+  height: 575px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  scroll-snap-align: start;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.workImageWrapper {
+  position: absolute;
+  inset: 0;
+}
+
+.workImageWrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none; /* 이미지가 클릭 이벤트를 차단하지 않도록 */
+}
+
+.workCard:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+}
+
+.workCard:hover .workImageWrapper img {
+  transform: scale(1.04);
+}
+
+.workCardDisabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.workCardDisabled:hover {
+  transform: none;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.workCardDisabled:hover .workImageWrapper img {
+  transform: none;
+}
+
+/* Scene info rectangle at the bottom of work cards */
+.sceneInfoRectangle {
+  width: 494px;
+  height: 67px;
+  flex-shrink: 0;
+  border-radius: 10px 10px 0 0;
+  background: #EBE9FF;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.sceneInfoLeft {
+  width: 160px;
+  height: 67px;
+  flex-shrink: 0;
+  border-radius: 10px 0 0 0;
+  background: #7560FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFF;
+  font-family: "Pretendard Variable";
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 170%; /* 40.8px */
+  padding-left: 10px;
+  box-sizing: border-box;
+}
+
+.sceneInfoRight {
+  flex: 1;
+  height: 67px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 17px;
+  color: #7560FF;
+  font-family: "Pretendard Variable";
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 170%; /* 40.8px */
+  box-sizing: border-box;
+}
+
+/* gradient overlay removed per request */
 
 .card {
   width: 723px;
@@ -165,6 +362,108 @@
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateX(0);
   opacity: 1;
+}
+
+/* 선택된 작품 표시: 기존 workCard 사이즈와 동일, 좌측 고정 */
+.selectedWork {
+  width: 760px;
+  height: 575px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+/* Role cards container */
+.roleContainer {
+  width: 783px;
+  height: 575px; /* same as selectedWork */
+  flex-shrink: 0;
+  min-height: 0; /* enable overflow scrolling on iOS */
+  border-radius: 10px;
+  border: 1.2px solid #7560FF;
+  background: #FDFDFF;
+  padding: 25px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior-y: contain;
+  cursor: grab;
+  user-select: none;
+}
+
+.roleContainer::-webkit-scrollbar { display: none; }
+.roleContainer { scrollbar-width: none; }
+
+.roleContainer.dragging {
+  cursor: grabbing;
+}
+
+/* Shared-element like transition image */
+.transitionImage {
+  position: fixed;
+  z-index: 1000;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  transition: top 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+              left 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+              width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+              height 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  /* Ensure children can use absolute positioning */
+}
+
+.transitionImage > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Delayed role card entrance */
+.roleHidden {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.roleEnter {
+  animation: roleEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.roleContainerEnter {
+  animation: roleEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Hidden state for the role container before entrance */
+.roleContainerHidden {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+/* Exit animation for role container */
+.roleContainerExit {
+  animation: roleExit 0.3s ease forwards;
+}
+
+@keyframes roleEnter {
+  0% { opacity: 0; transform: translateX(20px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+/* Fade out for returning to step 0 */
+.roleExit {
+  animation: roleExit 0.3s ease forwards;
+}
+
+@keyframes roleExit {
+  0% { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(10px); }
 }
 
 .leftCardsContainer {
@@ -237,10 +536,10 @@
 }
 
 .characterCard {
-  width: 723px;
-  height: 233px;
+  width: 727px;
+  height: 222px;
   flex-shrink: 0;
-  border-radius: 20px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -251,14 +550,16 @@
   overflow: hidden;
 }
 
-.characterCardLeft {
-  border: 1.295px solid #FFAA9E;
-  background: rgba(255, 170, 158, 0.05);
+.characterCard--disabled {
+  pointer-events: none;
+  opacity: 0.6;
 }
 
-.characterCardRight {
-  border: 1.295px solid #A4E87D;
-  background: rgba(206, 249, 181, 0.05);
+.characterCardLeft,
+.characterCardRight,
+.characterCard {
+  border: 1.2px solid #7560FF;
+  background: #FDFDFF;
 }
 
 .newCardsContainer {
@@ -282,11 +583,13 @@
   padding-left: 109px;
   padding-top: 86px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: #FFFBFA
+  background: #FDFDFF
+  ;
+  z-index: 2; /* ensure content is above overlay */
 }
 
 .characterLabel {
-  color: #FF7968;
+  color: #7560FF;
   font-family: "Pretendard Variable";
   font-size: 35px;
   font-style: normal;
@@ -296,8 +599,24 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.characterCardRight .characterLabel {
-  color: #8EDF60;
+.characterCardRight .characterLabel { color: #7560FF; }
+
+/* Supporting (disabled) role card base style */
+.supportingCard {
+  border-radius: 9px;
+  border: 1px solid #8580AC;
+  background: #E7E4FF;
+}
+
+/* Dark overlay above the supporting card */
+.supportingCard__overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 9px;
+  border: 1px solid #8580AC;
+  background: rgba(0, 0, 0, 0.50);
+  pointer-events: none;
+  z-index: 1;
 }
 
   .characterName {

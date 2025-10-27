@@ -19,16 +19,67 @@
   z-index: 2;
 }
 
+/* Stage that manages absolute positioning and shared offset */
+.logoStage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* shared offset variable for coordinated movement */
+  --text-width: 0px;
+  /* measured at runtime */
+  --logo-width: 200px;
+  /* image width */
+  --gap: 60px;
+  /* requested spacing between logo and text */
+}
+
+.withText {}
+
+.logoWrap {
+  position: absolute;
+  top: calc(45% - 100px);
+  /* align by logo top (logo height = 200px) */
+  left: 50%;
+  /* Center logo based on text width so the combined block is centered */
+  transform: translate(calc(-50% - (var(--text-width, 0px) + var(--gap)) / 2), 0);
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .logo {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
   transition: transform 0.3s ease, filter 0.3s ease;
   cursor: pointer;
-  background-color: transparent; /* ensure no bg fill */
+  background-color: transparent;
+  /* ensure no bg fill */
   filter: brightness(1) contrast(1);
   will-change: transform, filter;
 }
+
+/* Entrance animation: slide up from bottom with subtle scale */
+.logoEnter {
+  animation: logoSlideUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes logoSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20vh) scale(0.98);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.02);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Second stage: handled by .logoWrap transition using --logo-offset */
 
 .logo:hover {
   transform: scale(1.1);
@@ -37,6 +88,84 @@
   /* Remove rectangular box-shadow to avoid white-looking box */
   /* no box-shadow here */
   background-color: transparent;
+}
+
+/* Right-side text block */
+.textBlock {
+  position: absolute;
+  top: calc(45% - 100px);
+  /* align text top with logo top */
+  /* Place text center to the right of page center by (logoWidth + gap)/2 */
+  left: calc(50% + (var(--logo-width) + var(--gap)) / 2);
+  transform: translateX(-50%);
+}
+
+.textInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+  /* gap between small and big text */
+}
+
+.smallText {
+  width: 405px;
+  height: 47px;
+  flex-shrink: 0;
+
+  color: #000;
+  text-align: center;
+  font-family: "Pretendard Variable";
+  font-size: 36px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%;
+  /* 54px */
+  letter-spacing: -0.828px;
+}
+
+.bigText {
+  color: #000;
+  text-align: center;
+  font-family: HGGGothicssi;
+  font-size: 7.0625rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%;
+  /* 10.59375rem */
+  letter-spacing: -2.599px;
+}
+
+/* Text entrance animation */
+.textEnter {
+  animation: textEnter 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes textEnter {
+  0% {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* CTA text 250px below the logo bottom (logo top = 50%-100px, +200px logo height, +250px gap) */
+.ctaText {
+  position: absolute;
+  top: calc(50% + 350px);
+  left: 50%;
+  transform: translateX(-50%);
+  color: #7560FF;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  text-align: center;
 }
 
 /* 해상도 영역 표시
