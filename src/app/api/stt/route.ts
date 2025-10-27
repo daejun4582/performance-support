@@ -1,19 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
+
+
 export async function POST(request: NextRequest) {
   try {
-    // Initialize OpenAI client inside the function to avoid build-time errors
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-
+    // Check for API key first before initializing OpenAI client
     if (!process.env.OPENAI_API_KEY) {
+      console.error('❌ OpenAI API key is missing');
       return NextResponse.json(
         { error: 'OpenAI API key is not configured' }, 
         { status: 500 }
       );
     }
+
+    // Initialize OpenAI client inside the function to avoid build-time errors
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
 
     console.log('🎤 STT API called');
     
