@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import { WORKS } from '../../constants/works';
@@ -80,7 +80,8 @@ const DialogueMatch = ({ script, recognized }: { script: string; recognized: str
   );
 };
 
-export default function ResultPage() {
+// useSearchParams를 사용하는 컴포넌트
+function ResultPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [similarityData, setSimilarityData] = React.useState<SimilarityData[]>([]);
@@ -223,5 +224,22 @@ export default function ResultPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Suspense로 감싼 메인 컴포넌트
+export default function ResultPage() {
+  return (
+    <Suspense fallback={
+      <div className={styles.container}>
+        <div className={styles.mainCard}>
+          <div style={{ padding: '20px', textAlign: 'center' }}>
+            로딩 중...
+          </div>
+        </div>
+      </div>
+    }>
+      <ResultPageContent />
+    </Suspense>
   );
 }
