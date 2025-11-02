@@ -822,36 +822,145 @@ export default function RunPage() {
           return;
         }
 
-        // 업로드 (올바른 확장자 사용)
-        const formData = new FormData();
-        formData.append('video', blob, `practice_video.${actualExtension}`);
-
-        fetch('/api/upload-video', {
-          method: 'POST',
-          body: formData
-        })
-          .then(async (response) => {
-            if (!response.ok) {
-              const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-              console.error('❌ Upload failed:', errorData);
-              throw new Error(errorData.error || 'Upload failed');
+        // Google Drive에 직접 업로드 (Resumable Upload API 사용)
+        (async () => {
+          try {
+            // 1. Access Token 받기
+            const tokenResponse = await fetch('/api/get-upload-token');
+            if (!tokenResponse.ok) {
+              const errorData = await tokenResponse.json().catch(() => ({ error: 'Unknown error' }));
+              console.error('❌ Failed to get upload token:', errorData);
+              resolve(null);
+              return;
             }
-            return response.json();
-          })
-          .then((data) => {
-            console.log('✅ Video uploaded:', data.url);
+            const tokenData = await tokenResponse.json();
+            if (!tokenData.success || !tokenData.accessToken || !tokenData.folderId) {
+              console.error('❌ Invalid token response:', tokenData);
+              resolve(null);
+              return;
+            }
+
+            const accessToken = tokenData.accessToken;
+            const folderId = tokenData.folderId;
+
+            // 2. Resumable Upload 세션 시작
+            const fileName = `${Date.now()}_practice_video.${actualExtension}`;
+            const fileMetadata = {
+              name: fileName,
+              parents: [folderId]
+            };
+
+            const initResponse = await fetch(
+              `https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable`,
+              {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`,
+                  'Content-Type': 'application/json; charset=UTF-8'
+                },
+                body: JSON.stringify(fileMetadata)
+              }
+            );
+
+            if (!initResponse.ok) {
+              const errorText = await initResponse.text();
+              console.error('❌ Failed to initialize upload:', errorText);
+              resolve(null);
+              return;
+            }
+
+            const uploadUrl = initResponse.headers.get('Location');
+            if (!uploadUrl) {
+              console.error('❌ No upload URL received');
+              resolve(null);
+              return;
+            }
+
+            // 3. 파일 업로드
+            const uploadResponse = await fetch(uploadUrl, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': actualMimeType,
+                'Content-Length': blob.size.toString()
+              },
+              body: blob
+            });
+
+            if (!uploadResponse.ok) {
+              const errorText = await uploadResponse.text();
+              console.error('❌ Upload failed:', errorText);
+              resolve(null);
+              return;
+            }
+
+            const uploadedFile = await uploadResponse.json();
+            const fileId = uploadedFile.id;
+
+            if (!fileId) {
+              console.error('❌ No file ID in upload response');
+              resolve(null);
+              return;
+            }
+
+            // 4. 파일 정보 가져오기 및 공개 권한 설정
+            const fileInfoResponse = await fetch(
+              `https://www.googleapis.com/drive/v3/files/${fileId}?fields=id,name,webViewLink,webContentLink`,
+              {
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`
+                }
+              }
+            );
+
+            if (!fileInfoResponse.ok) {
+              console.warn('⚠️ Failed to get file info, but file uploaded');
+              // 파일은 업로드되었으므로 기본 URL 사용
+              const defaultUrl = `https://drive.google.com/file/d/${fileId}/view`;
+              if (typeof window !== 'undefined') {
+                localStorage.setItem('practiceVideoUrl', defaultUrl);
+              }
+              resolve(defaultUrl);
+              return;
+            }
+
+            const fileInfo = await fileInfoResponse.json();
+
+            // 5. 공개 권한 부여
+            try {
+              await fetch(
+                `https://www.googleapis.com/drive/v3/files/${fileId}/permissions`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    role: 'reader',
+                    type: 'anyone'
+                  })
+                }
+              );
+            } catch (permError) {
+              console.warn('⚠️ Failed to set public permission:', permError);
+              // 권한 설정 실패해도 계속 진행
+            }
+
+            const fileUrl = fileInfo.webViewLink || `https://drive.google.com/file/d/${fileId}/view`;
+            console.log('✅ Video uploaded:', fileUrl);
 
             // localStorage에 URL 저장
             if (typeof window !== 'undefined') {
-              localStorage.setItem('practiceVideoUrl', data.url);
+              localStorage.setItem('practiceVideoUrl', fileUrl);
             }
 
-            resolve(data.url);
-          })
-          .catch((error) => {
+            resolve(fileUrl);
+
+          } catch (error) {
             console.error('❌ Upload error:', error);
             resolve(null);
-          });
+          }
+        })();
       };
 
       recorder.stop();
