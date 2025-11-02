@@ -1,7 +1,8 @@
 import React from 'react';
 import { calculateFrontBiasedSimilarity, meetsMainThreshold, meetsVariationThreshold } from '../utils/similarity';
+import { getMediaPaths } from '../utils/media-path';
 
-export type Cue = { role: string; text: string; audioUrl?: string; skipRecording?: boolean };
+export type Cue = { role: string; text: string; audioUrl?: string; videoUrl?: string; skipRecording?: boolean };
 export type Script = Cue[];
 export type Phase = 'idle' | 'entry' | 'ai-playing' | 'waiting' | 'user-recording' | 'waiting-for-confirmation' | 'done';
 export type SubtitleKind = 'ai' | 'user-partial' | 'user-final' | null;
@@ -12,8 +13,13 @@ export interface TurnEngineConfig {
   adlibMode: boolean;
   getIsPlaying: () => boolean;
   onPhase: (phase: Phase) => void;
-  onSubtitle: (text: string, kind: SubtitleKind) => void;
+  onSubtitle: (text: string, kind: SubtitleKind, cueIndex?: number) => void;
   onError: (type: string, detail?: unknown) => void;
+  videoContainer?: HTMLElement | null; // 비디오를 표시할 컨테이너
+  getCurrentSettings?: () => { sliderValue: number; selectedPersonality: string; hasCustomImage: boolean }; // 동적 설정 가져오기
+  workIndex?: number; // work1 or work2
+  opponentGender?: 'male' | 'female'; // 상대역 성별
+  hasCustomImage?: boolean; // 얼굴 설정 여부
 }
 
 export interface TurnEngine {
@@ -41,6 +47,7 @@ let currentPhase: Phase = 'idle';
 let isDestroyed = false;
 let isPaused = false; // 초기값은 false (재생 상태)
 let lastPlayState = false; // 마지막 재생 상태 추적
+let pendingWhisperRequests: Set<Promise<void>> = new Set(); // 진행 중인 Whisper 요청 추적
 let audioContext: AudioContext | null = null;
 let analyser: AnalyserNode | null = null;
 let microphone: MediaStreamAudioSourceNode | null = null;
@@ -77,34 +84,401 @@ async function transcribeWithWhisper(blob: Blob, lang: string = 'ko'): Promise<s
   return data.text || '';
 }
 
-// Audio playback or simulation
-async function playOrSimulate(cue: Cue): Promise<void> {
+// Current media instances for pause/resume
+let currentAudio: HTMLAudioElement | null = null;
+let currentVideo: HTMLVideoElement | null = null;
+let currentMediaTimeout: NodeJS.Timeout | null = null;
+let currentMediaResolve: (() => void) | null = null;
+let pausedMediaTime = 0; // 일시정지된 시점의 재생 시간
+let simulationStartTime = 0; // 시뮬레이션 시작 시간
+let simulationDuration = 0; // 시뮬레이션 전체 시간
+let simulationElapsedTime = 0; // 시뮬레이션 경과 시간
+
+// Media playback (audio/video) or simulation
+async function playOrSimulate(cue: Cue, resumeFromTime: number = 0): Promise<void> {
   return new Promise((resolve) => {
-    if (cue.audioUrl) {
-      // Real audio playback
-      const audio = new Audio(cue.audioUrl);
-      audio.onloadeddata = () => {
-        audio.play();
-        audio.onended = () => resolve();
+    currentMediaResolve = resolve;
+    
+    console.log('🎬 [playOrSimulate] Starting with:', {
+      hasVideoUrl: !!cue.videoUrl,
+      videoUrl: cue.videoUrl,
+      hasAudioUrl: !!cue.audioUrl,
+      audioUrl: cue.audioUrl,
+      resumeFromTime
+    });
+    
+    // Video가 있으면 비디오 우선
+    if (cue.videoUrl) {
+      console.log('📹 [playOrSimulate] Creating video element for:', cue.videoUrl);
+      currentVideo = document.createElement('video');
+      
+      // 캐시 우회를 위해 타임스탬프 추가 (설정 변경 시 강제 새로고침)
+      const videoUrlWithCacheBust = cue.videoUrl + (cue.videoUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+      
+      currentVideo.src = videoUrlWithCacheBust;
+      currentVideo.style.width = '100%';
+      currentVideo.style.height = '100%';
+      currentVideo.style.objectFit = 'cover';
+      
+      // 오디오가 있으면 비디오 음소거 (속도 조절된 오디오 사용)
+      // 빈 문자열 체크 강화
+      const hasAudio = cue.audioUrl && cue.audioUrl.trim().length > 0;
+      if (hasAudio) {
+        currentVideo.muted = true;
+      }
+      
+      // videoContainer에 추가
+      if (config?.videoContainer) {
+        // videoContainer가 DOM에 있는지 확인
+        if (!config.videoContainer.parentNode) {
+          console.warn('⚠️ videoContainer is not in DOM, video may not be visible');
+        }
+        
+        // 기존 비디오 제거 (중복 방지)
+        const existingVideos = config.videoContainer.querySelectorAll('video');
+        existingVideos.forEach(video => video.remove());
+        
+        // 새 비디오 추가
+        config.videoContainer.appendChild(currentVideo);
+        console.log('✅ [playOrSimulate] Video element added to container');
+        
+        // 비디오가 실제로 DOM에 추가되었는지 확인
+        if (!currentVideo.parentNode) {
+          console.error('❌ Video element was not added to container');
+        }
+      } else {
+        console.warn('⚠️ No videoContainer provided, video will not be visible');
+        // videoContainer가 없어도 비디오는 계속 로드 (나중에 추가될 수 있음)
+      }
+      
+      // 이벤트 핸들러 설정 후 명시적으로 로드 시작
+      let playbackStarted = false;
+      
+      // 재생 시작 함수 (중복 방지)
+      const startPlayback = () => {
+        if (playbackStarted || !currentVideo) return;
+        playbackStarted = true;
+        
+        console.log('▶️ [playOrSimulate] Starting video playback');
+        
+        // 오디오가 있으면 오디오도 함께 재생
+        if (hasAudio) {
+          console.log('🔊 [playOrSimulate] Has audio, playing both video and audio');
+          // 오디오와 비디오 모두 시작
+          currentVideo.play().catch(err => {
+            console.error('❌ Video play failed:', err);
+          });
+          playAudio(cue.audioUrl!, () => {
+            // 오디오 종료 시 비디오도 정리하고 종료
+            if (currentVideo) {
+              currentVideo.pause();
+            }
+            cleanup();
+            resolve();
+          }, resumeFromTime, true); // hasVideo: true 전달
+          
+          // 비디오가 먼저 끝나도 오디오는 계속 재생 (onended 핸들러 설정 안 함)
+        } else {
+          // 오디오가 없으면 비디오 종료 시 resolve
+          currentVideo.play().catch(err => {
+            console.error('❌ Video play failed:', err);
+          });
+          currentVideo.onended = () => {
+            cleanup();
+            resolve();
+          };
+        }
       };
-      audio.onerror = () => {
-        console.warn('Audio load failed, falling back to simulation');
-        // Fallback to simulation
-        const duration = Math.max(2000, cue.text.length * 100);
-        setTimeout(resolve, duration);
+      
+      // resumeFromTime이 있으면 seeked 이벤트에서 재생 시작
+      if (resumeFromTime > 0) {
+        currentVideo.onseeked = () => {
+          console.log('✅ [playOrSimulate] Video seeked to:', resumeFromTime);
+          startPlayback();
+        };
+      }
+      
+      currentVideo.onloadedmetadata = () => {
+        if (currentVideo && resumeFromTime > 0) {
+          // 저장된 시간부터 재생 (메타데이터 로드 후 설정)
+          console.log('⏰ [playOrSimulate] Setting currentTime to:', resumeFromTime);
+          currentVideo.currentTime = resumeFromTime;
+        } else if (resumeFromTime === 0) {
+          // resumeFromTime이 0이면 즉시 재생 시작
+          startPlayback();
+        }
       };
-    } else {
-      // Time simulation based on text length
-      const duration = Math.max(2000, cue.text.length * 100);
-      setTimeout(resolve, duration);
+      
+      // canplay 이벤트에서도 시간 설정 (더 안전함)
+      currentVideo.oncanplay = () => {
+        if (currentVideo && resumeFromTime > 0 && Math.abs(currentVideo.currentTime - resumeFromTime) > 0.1) {
+          console.log('⏰ [playOrSimulate] Adjusting currentTime in oncanplay to:', resumeFromTime);
+          currentVideo.currentTime = resumeFromTime;
+        }
+      };
+      
+      currentVideo.onloadeddata = () => {
+        console.log('✅ [playOrSimulate] Video loaded');
+        if (!currentVideo) return;
+        
+        // resumeFromTime이 0이면 즉시 재생 (seeked 이벤트 대기 안 함)
+        if (resumeFromTime === 0 && !playbackStarted) {
+          startPlayback();
+        } else if (resumeFromTime > 0) {
+          // resumeFromTime이 있으면 seeked 이벤트를 기다림
+          // currentTime이 설정되어 있지 않으면 다시 설정
+          if (Math.abs(currentVideo.currentTime - resumeFromTime) > 0.1) {
+            console.log('⏰ [playOrSimulate] Setting currentTime in onloadeddata to:', resumeFromTime);
+            currentVideo.currentTime = resumeFromTime;
+          }
+        }
+      };
+      currentVideo.onerror = (e) => {
+        console.error('❌ Video load failed:', cue.videoUrl, e);
+        cleanup();
+        // Audio로 fallback (빈 문자열 체크)
+        const hasAudioFallback = cue.audioUrl && cue.audioUrl.trim().length > 0;
+        if (hasAudioFallback && cue.audioUrl) {
+          playAudio(cue.audioUrl, resolve, resumeFromTime);
+        } else {
+          startSimulation(cue.text.length, resolve);
+        }
+      };
+      
+      // 비디오 로드 시작 (명시적으로 호출하여 새로운 URL 즉시 로드)
+      console.log('📥 [playOrSimulate] Video load() called for:', cue.videoUrl);
+      currentVideo.load();
+    } 
+    // Audio만 있으면 오디오 재생
+    else if (cue.audioUrl) {
+      playAudio(cue.audioUrl, resolve, resumeFromTime);
+    } 
+    // 둘 다 없으면 시뮬레이션
+    else {
+      startSimulation(cue.text.length, resolve);
     }
   });
+}
+
+// Audio playback helper
+function playAudio(audioUrl: string, resolve: () => void, resumeFromTime: number = 0, hasVideo: boolean = false): void {
+  // 빈 문자열 체크
+  if (!audioUrl || audioUrl.trim().length === 0) {
+    console.warn('⚠️ Empty audioUrl provided to playAudio, skipping');
+    resolve();
+    return;
+  }
+  
+  // 캐시 우회를 위해 타임스탬프 추가 (설정 변경 시 강제 새로고침)
+  const audioUrlWithCacheBust = audioUrl + (audioUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+  
+  currentAudio = new Audio(audioUrlWithCacheBust);
+  currentAudio.onloadeddata = () => {
+    if (currentAudio) {
+      // 저장된 시간부터 재생
+      if (resumeFromTime > 0) {
+        currentAudio.currentTime = resumeFromTime;
+      }
+      currentAudio.play();
+      console.log('🔊 Audio playing:', audioUrl, resumeFromTime > 0 ? `from ${resumeFromTime}s` : '', 'Cache bust:', audioUrlWithCacheBust);
+      currentAudio.onended = () => {
+        cleanup();
+        resolve();
+      };
+    }
+  };
+  currentAudio.onerror = () => {
+    console.warn('⚠️ Audio load failed');
+    
+    // 비디오가 있으면 비디오는 계속 재생하고, 오디오만 정리
+    if (hasVideo && currentVideo) {
+      console.log('📹 Video is present, continuing video playback without audio');
+      // 오디오만 정리
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.src = '';
+        currentAudio = null;
+      }
+      // 비디오 종료 시 resolve하도록 설정
+      if (!currentVideo.onended) {
+        currentVideo.onended = () => {
+          cleanup();
+          resolve();
+        };
+      }
+    } else {
+      // 비디오가 없으면 기존 로직대로 시뮬레이션으로 fallback
+      console.warn('⚠️ No video, falling back to simulation');
+      cleanup();
+      startSimulation(config?.script[currentIndex]?.text.length || 10, resolve);
+    }
+  };
+  
+  // 오디오 로드 시작 (명시적으로 호출하여 새로운 URL 즉시 로드)
+  currentAudio.load();
+  console.log('📥 Audio load() called for:', audioUrl, 'Cache bust:', audioUrlWithCacheBust);
+}
+
+// Simulation helper
+function startSimulation(textLength: number, resolve: () => void): void {
+  const duration = Math.max(2000, textLength * 100);
+  simulationDuration = duration;
+  simulationStartTime = Date.now();
+  simulationElapsedTime = 0;
+  
+  currentMediaTimeout = setTimeout(() => {
+    cleanup();
+    resolve();
+  }, duration);
+}
+
+// Pause current media/simulation
+function pauseMediaPlayback(): void {
+  // 비디오와 오디오 모두 일시정지 (동시 재생 중일 수 있음)
+  if (currentVideo) {
+    pausedMediaTime = currentVideo.currentTime;
+    currentVideo.pause();
+  }
+  if (currentAudio) {
+    // 비디오가 있으면 비디오 시간 사용, 없으면 오디오 시간 사용
+    if (!currentVideo) {
+      pausedMediaTime = currentAudio.currentTime;
+    }
+    currentAudio.pause();
+  } else if (currentMediaTimeout) {
+    // 시뮬레이션 일시정지
+    simulationElapsedTime = Date.now() - simulationStartTime;
+    clearTimeout(currentMediaTimeout);
+    currentMediaTimeout = null;
+  }
+}
+
+// Resume current media/simulation with updated settings
+async function resumeMediaPlayback(): Promise<void> {
+  const savedTime = pausedMediaTime;
+  const cue = config?.script[currentIndex];
+  
+  if (!cue) {
+    console.warn('⚠️ No cue to resume');
+    return;
+  }
+  
+  // 기존 미디어 정리
+  cleanup();
+  
+  // videoContainer 재확인 (React ref 업데이트 대비)
+  if (config?.videoContainer && !config.videoContainer.parentNode) {
+    console.warn('⚠️ videoContainer is not in DOM, video may not be visible');
+  }
+  
+  console.log('▶️ Resuming with updated settings from:', savedTime);
+  
+  // 동적으로 미디어 경로 업데이트 (설정 변경 반영)
+  if (config?.getCurrentSettings && config?.workIndex && config?.opponentGender !== undefined) {
+    const settings = config.getCurrentSettings();
+    
+    console.log('🔍 [resumeMediaPlayback] Settings received:', {
+      hasCustomImage: settings.hasCustomImage,
+      personality: settings.selectedPersonality,
+      sliderValue: settings.sliderValue
+    });
+    
+    // 상대역의 몇 번째 대사인지 계산 (skipRecording 제외)
+    let opponentDialogueNumber = 0;
+    for (let i = 0; i <= currentIndex; i++) {
+      const c = config.script[i];
+      if (c && c.role !== config.userRole && !c.skipRecording) {
+        opponentDialogueNumber++;
+      }
+    }
+    
+    // 새로운 미디어 경로 생성 (settings에서 hasCustomImage 가져오기)
+    const { videoUrl, audioUrl } = getMediaPaths({
+      workIndex: config.workIndex,
+      opponentGender: config.opponentGender,
+      hasCustomImage: settings.hasCustomImage, // ✅ 최신 설정에서 가져오기
+      personality: settings.selectedPersonality || 'basic',
+      dialogueNumber: opponentDialogueNumber,
+      speed: settings.sliderValue
+    });
+    
+    // cue에 업데이트된 경로 적용 (스크립트 배열의 원본도 수정)
+    cue.videoUrl = videoUrl;
+    cue.audioUrl = audioUrl;
+    
+    console.log('✅ [resumeMediaPlayback] Cue updated:', {
+      cueIndex: currentIndex,
+      videoUrl: cue.videoUrl,
+      audioUrl: cue.audioUrl
+    });
+    
+    console.log('🎛️ Updated media paths for resume:', { 
+      videoUrl, 
+      audioUrl, 
+      hasCustomImage: settings.hasCustomImage,
+      personality: settings.selectedPersonality || 'basic',
+      dialogueNumber: opponentDialogueNumber, 
+      savedTime,
+      oldVideoUrl: cue.videoUrl, // 비교를 위해
+      oldAudioUrl: cue.audioUrl
+    });
+  } else {
+    console.warn('⚠️ Cannot update media paths: missing config');
+  }
+  
+  // 새로운 미디어를 저장된 시간부터 재생 (업데이트된 경로로)
+  console.log('▶️ Starting playback with updated paths:', {
+    videoUrl: cue.videoUrl,
+    audioUrl: cue.audioUrl,
+    savedTime
+  });
+  await playOrSimulate(cue, savedTime);
+}
+
+// Cleanup media resources
+function cleanup(): void {
+  if (currentVideo) {
+    currentVideo.pause();
+    // 이벤트 핸들러 제거 (중복 에러 방지)
+    currentVideo.onended = null;
+    currentVideo.onerror = null;
+    currentVideo.onloadeddata = null;
+    currentVideo.onloadedmetadata = null;
+    currentVideo.oncanplay = null;
+    currentVideo.onseeked = null;
+    currentVideo.src = '';
+    // DOM에서 제거
+    if (currentVideo.parentNode) {
+      currentVideo.parentNode.removeChild(currentVideo);
+    }
+    currentVideo = null;
+  }
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.src = '';
+    currentAudio = null;
+  }
+  if (currentMediaTimeout) {
+    clearTimeout(currentMediaTimeout);
+    currentMediaTimeout = null;
+  }
+  currentMediaResolve = null;
+  pausedMediaTime = 0;
+  simulationElapsedTime = 0;
 }
 
 // Start recording with MediaRecorder + Whisper
 async function startRecording(): Promise<void> {
   try {
-    console.log('🎤 Starting voice recording with MediaRecorder + Whisper...');
+    console.log('🎤 [DEBUG] Starting voice recording with MediaRecorder + Whisper...');
+    console.log('🎤 [DEBUG] Current state:', {
+      isRecording,
+      audioContextState: audioContext?.state,
+      audioStreamActive: audioStream?.active,
+      hasMediaRecorder: !!mediaRecorder,
+      currentPhase,
+      vadIntervalRunning: !!vadInterval
+    });
     
     // 1. 녹음 시작 시 플래그 올리기
     isRecording = true;
@@ -114,13 +488,15 @@ async function startRecording(): Promise<void> {
       if (!audioContext) {
         const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
         audioContext = new AC();
-        console.log('🔊 AudioContext created', { sampleRate: audioContext?.sampleRate, state: audioContext?.state });
+        console.log('🔊 [DEBUG] AudioContext created', { sampleRate: audioContext?.sampleRate, state: audioContext?.state });
       } else if (audioContext.state === 'suspended') {
         await audioContext.resume();
-        console.log('🔊 AudioContext resumed (pre-recording)');
+        console.log('🔊 [DEBUG] AudioContext resumed (pre-recording)', { state: audioContext.state });
+      } else {
+        console.log('🔊 [DEBUG] AudioContext already active', { state: audioContext.state });
       }
     } catch (e) {
-      console.warn('⚠️ Failed to create/resume AudioContext', e);
+      console.warn('⚠️ [DEBUG] Failed to create/resume AudioContext', e);
     }
 
     // Request microphone access with detailed logging
@@ -153,58 +529,46 @@ async function startRecording(): Promise<void> {
     };
     
     mediaRecorder.onstop = async () => {
-      console.log('⏹️ MediaRecorder stopped, sending to Whisper...', { chunks: recordedChunks.length, isStoppedByUser });
+      console.log('⏹️ MediaRecorder stopped, proceeding to next turn immediately');
       const blob = new Blob(recordedChunks, { type: mime });
-      try {
-        const text = await transcribeWithWhisper(blob, 'ko');
-        currentUserText = text || '';
-        console.log('✅ Whisper transcription result:', currentUserText);
-        
-        if (currentUserText) {
-          config?.onSubtitle(currentUserText, 'user-final');
-        }
-        
-        // 녹음 정리
-        cleanupRecording();
-        isRecording = false;
-        
-        // 모두 waiting-for-confirmation 상태로 설정 (결과 표시)
-        currentPhase = 'waiting-for-confirmation';
-        config?.onPhase('waiting-for-confirmation');
-        console.log('✅ Recording completed, showing result to user');
-        
-        // 사용자가 수동으로 정지한 경우만 대기, 자동 종료는 4초 후 진행
-        if (!isStoppedByUser) {
-          // 자동 종료된 경우 → 결과를 4초간 표시 후 자동으로 다음 턴으로
-          console.log('▶️ Auto-stopped, showing result for 4 seconds then proceeding...');
-          setTimeout(() => {
-            if (!isDestroyed && currentPhase === 'waiting-for-confirmation') {
-              console.log('✅ Auto-advancing to next cue');
-              // waiting 단계 생략하고 바로 다음 cue로
-              nextCue();
-            }
-          }, 4000);
-        } else {
-          console.log('⏸️ Waiting for user confirmation (manual stop)');
-        }
-      } catch (err) {
-        console.error('❌ Whisper transcription failed', err);
-        config?.onError('stt-failed', err);
-        // 에러 발생 시에도 결과를 표시하고 waiting-for-confirmation 상태 유지
-        cleanupRecording();
-        isRecording = false;
-        currentPhase = 'waiting-for-confirmation';
-        config?.onPhase('waiting-for-confirmation');
-        // 에러 메시지도 표시하고 4초 후 자동 진행
-        setTimeout(() => {
-          if (!isDestroyed && currentPhase === 'waiting-for-confirmation') {
-            console.log('✅ Auto-advancing to next cue after error');
-            currentPhase = 'waiting';
-            config?.onPhase('waiting');
-            nextCue();
+      
+      // 녹음 정리 및 바로 다음 턴으로 진행
+      cleanupRecording();
+      isRecording = false;
+      
+      console.log('✅ Recording completed, moving to next turn');
+      
+      // 현재 cueIndex 저장 (nextCue 호출 전)
+      const recordedCueIndex = currentIndex;
+      
+      // Whisper API 요청을 Promise로 추적 (즉시 실행하지 않고 변수에 할당)
+      const whisperPromise: Promise<void> = (async () => {
+        try {
+          const text = await transcribeWithWhisper(blob, 'ko');
+          currentUserText = text || '';
+          console.log('📝 Whisper result (background):', currentUserText, 'for cueIndex:', recordedCueIndex);
+          
+          if (currentUserText) {
+            // onSubtitle로 user-final 전달 (백그라운드) + cueIndex 포함
+            config?.onSubtitle(currentUserText, 'user-final', recordedCueIndex);
           }
-        }, 4000);
-      }
+        } catch (err) {
+          console.error('❌ Whisper transcription failed (background)', err);
+          config?.onError('stt-failed', err);
+        }
+      })();
+      
+      // 완료 후 Set에서 제거하는 핸들러 추가
+      whisperPromise.finally(() => {
+        pendingWhisperRequests.delete(whisperPromise);
+        console.log('✅ Whisper request completed, remaining:', pendingWhisperRequests.size);
+      });
+      
+      // 진행 중인 요청에 추가
+      pendingWhisperRequests.add(whisperPromise);
+      console.log('📝 Added Whisper request, total pending:', pendingWhisperRequests.size);
+      
+      nextCue(); // 바로 다음 턴으로
     };
     
     mediaRecorder.start();
@@ -331,17 +695,17 @@ async function setupVAD(enableAutoStop: boolean = true): Promise<void> {
         const isVoiceDetected = rms > threshold;
 
         // 디버깅을 위한 상세 로그 (처음 몇 번만)
-        if (Math.random() < 0.1) { // 10% 확률로만 로그
-          console.log('🎯 VAD check:', { 
-            rms: rms.toFixed(4), 
-            peak: peak.toFixed(4),
-            threshold: threshold.toFixed(4), 
-            isVoiceDetected, 
-            noiseFloor: noiseFloor.toFixed(4),
-            silenceDuration: vadSilenceStart ? Date.now() - vadSilenceStart : 0,
-            rawSample: dataArray[0] // 첫 번째 샘플 값
-          });
-        }
+        // if (Math.random() < 0.1) { // 10% 확률로만 로그
+        //   console.log('🎯 VAD check:', { 
+        //     rms: rms.toFixed(4), 
+        //     peak: peak.toFixed(4),
+        //     threshold: threshold.toFixed(4), 
+        //     isVoiceDetected, 
+        //     noiseFloor: noiseFloor.toFixed(4),
+        //     silenceDuration: vadSilenceStart ? Date.now() - vadSilenceStart : 0,
+        //     rawSample: dataArray[0] // 첫 번째 샘플 값
+        //   });
+        // }
 
         // enableAutoStop이 false면 자동 종료하지 않음
         if (!enableAutoStop) {
@@ -521,11 +885,20 @@ async function triggerAdlib(): Promise<void> {
 }
 
 // Move to next cue
-function nextCue(): void {
+async function nextCue(): Promise<void> {
   console.log('⏭️ nextCue() called, currentIndex:', currentIndex, 'currentPhase:', currentPhase);
   
   if (currentIndex >= (config?.script.length || 0) - 1) {
-    console.log('🏁 Script completed, setting phase to done');
+    console.log('🏁 Script completed, waiting for pending Whisper requests...');
+    
+    // 모든 Whisper 요청이 완료될 때까지 대기
+    if (pendingWhisperRequests.size > 0) {
+      console.log('⏳ Waiting for', pendingWhisperRequests.size, 'Whisper requests to complete...');
+      await Promise.all(Array.from(pendingWhisperRequests));
+      console.log('✅ All Whisper requests completed');
+    }
+    
+    console.log('🏁 Setting phase to done');
     setPhase('done');
     return;
   }
@@ -577,6 +950,57 @@ function processCurrentCue(): void {
     }
   } else {
     console.log('🤖 AI turn starting...');
+    
+    // 동적으로 미디어 경로 업데이트 (항상 최신 설정 반영)
+    if (config?.getCurrentSettings && config?.workIndex && config?.opponentGender !== undefined) {
+      const settings = config.getCurrentSettings();
+      
+      console.log('🔍 [processCurrentCue] Settings received for new AI turn:', {
+        hasCustomImage: settings.hasCustomImage,
+        personality: settings.selectedPersonality,
+        sliderValue: settings.sliderValue
+      });
+      
+      // 상대역의 몇 번째 대사인지 계산 (skipRecording 제외)
+      let opponentDialogueNumber = 0;
+      for (let i = 0; i <= currentIndex; i++) {
+        const c = config.script[i];
+        if (c && c.role !== config.userRole && !c.skipRecording) {
+          opponentDialogueNumber++;
+        }
+      }
+      
+      // 기존 경로 저장 (비교용)
+      const oldVideoUrl = cue.videoUrl;
+      const oldAudioUrl = cue.audioUrl;
+      
+      // 새로운 미디어 경로 생성 (settings에서 hasCustomImage 가져오기)
+      const { videoUrl, audioUrl } = getMediaPaths({
+        workIndex: config.workIndex,
+        opponentGender: config.opponentGender,
+        hasCustomImage: settings.hasCustomImage, // ✅ 최신 설정에서 가져오기
+        personality: settings.selectedPersonality || 'basic',
+        dialogueNumber: opponentDialogueNumber,
+        speed: settings.sliderValue
+      });
+      
+      // cue에 업데이트된 경로 적용 (스크립트 배열의 원본도 수정)
+      cue.videoUrl = videoUrl;
+      cue.audioUrl = audioUrl;
+      
+      console.log('🎛️ Updated media paths for new AI turn:', { 
+        oldVideoUrl,
+        newVideoUrl: videoUrl,
+        oldAudioUrl,
+        newAudioUrl: audioUrl,
+        settings, 
+        dialogueNumber: opponentDialogueNumber,
+        pathChanged: oldVideoUrl !== videoUrl || oldAudioUrl !== audioUrl
+      });
+    } else {
+      console.warn('⚠️ Cannot update media paths in processCurrentCue: missing config');
+    }
+    
     setPhase('ai-playing');
     config?.onSubtitle(cue.text, 'ai');
     
@@ -691,9 +1115,10 @@ export function createTurnEngine(engineConfig: TurnEngineConfig): TurnEngine {
         cleanupRecording();
         setPhase('waiting');
       } else if (currentPhase === 'ai-playing') {
-        // AI 차례가 끝날 때까지 기다렸다가 일시정지
-        console.log('⏸️ Waiting for AI turn to complete before pausing...');
-        // playOrSimulate이 끝나면 waiting 상태로 전환되는데, isPaused 플래그로 인해 자동으로 정지됨
+        // AI 미디어 일시정지 (정지한 시점 저장)
+        pauseMediaPlayback();
+        console.log('⏸️ AI media paused, staying in ai-playing state');
+        // ai-playing 상태 유지 (재개 시 이어서 진행)
       } else if (currentPhase === 'waiting') {
         // 이미 대기 상태이면 그대로 유지 (아무것도 하지 않음)
         console.log('⏸️ Already in waiting state');
@@ -705,9 +1130,28 @@ export function createTurnEngine(engineConfig: TurnEngineConfig): TurnEngine {
     },
 
     resume: () => {
-      console.log('▶️ Turn Engine resume called');
+      console.log('▶️ Turn Engine resume called, current phase:', currentPhase);
+      isPaused = false;
+      
       if (currentPhase === 'waiting') {
+        console.log('▶️ Resuming from waiting, processing current cue');
         processCurrentCue();
+      } else if (currentPhase === 'ai-playing') {
+        // AI 턴 중간에 일시정지했다가 재개하는 경우
+        console.log('▶️ Resuming from ai-playing, continuing playback');
+        resumeMediaPlayback().then(() => {
+          console.log('🤖 AI turn resumed and completed, moving to next...');
+          // 일시정지 상태가 아니면 다음으로 진행
+          if (!isDestroyed && !isPaused) {
+            setTimeout(() => {
+              if (!isDestroyed && !isPaused) {
+                nextCue();
+              }
+            }, 200);
+          } else {
+            console.log('⏸️ AI turn ended but paused, not moving to next');
+          }
+        });
       }
     },
 

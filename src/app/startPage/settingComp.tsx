@@ -7,31 +7,68 @@ import { AddButton, ResetButton, PreviewButton, ApplyButton } from '../../compon
 import { Slider } from '../../components/Slider';
 import { ToggleButtonGroup, SelectionPreview } from '../../components/ToggleButton';
 import { PracticeStartButton } from '../../components/PrimaryButton';
+import { WORKS } from '../../constants/works';
 import styles from './settingComp.module.css';
 
 interface SettingCompProps {
   selectedCharacter: string;
   opponentCharacter: string;
   selectedWorkIndex: number | null;
-  onNext?: (personality: string, slider: number) => void; // 4단계(카메라 설정)로 이동 등 외부 전환용, personality와 slider 값 전달
+  onNext?: (personality: string, slider: number, hasCustomImage: boolean) => void; // 4단계(카메라 설정)로 이동 등 외부 전환용
 }
 
 export default function SettingComp({ selectedCharacter, opponentCharacter, selectedWorkIndex, onNext }: SettingCompProps) {
   const router = useRouter();
   const [sliderValue, setSliderValue] = React.useState(0); // 디폴트 0
   const [selectedPersonality, setSelectedPersonality] = React.useState<string | null>(null); // 초기값: 선택되지 않음
+  
+  // Debug: Props 확인
+  React.useEffect(() => {
+    console.log('🎭 SettingComp props:', { selectedCharacter, opponentCharacter, selectedWorkIndex });
+  }, [selectedCharacter, opponentCharacter, selectedWorkIndex]);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null); // 초기값: null (사용자가 선택한 이미지)
   const [hasSelectedCustomImage, setHasSelectedCustomImage] = React.useState(false); // 사용자가 커스텀 이미지를 선택했는지 추적
   const [isLoading, setIsLoading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
-  const [addThumb, setAddThumb] = React.useState<string | null>(null);
+  const [addThumb, setAddThumb] = React.useState<string | null>(null); // feature_img 썸네일
+
+  // 기본 이미지 경로 생성 (default 이미지)
+  const getDefaultImagePath = (): string => {
+    if (!selectedWorkIndex || selectedWorkIndex < 1 || selectedWorkIndex > 2) {
+      return '/asset/png/work1_default_girl.png'; // fallback
+    }
+    const work = WORKS[selectedWorkIndex - 1];
+    const isOpponentMale = work.characters.male === opponentCharacter;
+    const genderSuffix = isOpponentMale ? 'man' : 'girl';
+    return `/asset/png/work${selectedWorkIndex}_default_${genderSuffix}.png`;
+  };
+
+  // 변경된 이미지 경로 생성 (man/girl 이미지)
+  const getChangedImagePath = (): string => {
+    if (!selectedWorkIndex || selectedWorkIndex < 1 || selectedWorkIndex > 2) {
+      return '/asset/png/work1_girl.png'; // fallback
+    }
+    const work = WORKS[selectedWorkIndex - 1];
+    const isOpponentMale = work.characters.male === opponentCharacter;
+    const genderSuffix = isOpponentMale ? 'man' : 'girl';
+    return `/asset/png/work${selectedWorkIndex}_${genderSuffix}.png`;
+  };
 
   const isImageSettingComplete = !isLoading; // 이미지 선택 여부와 관계없이 로딩만 확인
   const isVoiceSettingComplete = true; // 디폴트 제공으로 항상 OK
   const isAllSettingsComplete = true; // 디폴트 값으로 바로 진행 가능
 
-  // 디폴트 값은 useState 초기값으로 설정함
+  // selectedWorkIndex나 opponentCharacter가 변경되면 이미지 상태 초기화
+  React.useEffect(() => {
+    // 처음 진입 시 항상 초기 상태로 시작 (썸네일 없음, default 이미지만)
+    setSelectedImage(null);
+    setHasSelectedCustomImage(false);
+    setAddThumb(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, [selectedWorkIndex, opponentCharacter]);
 
   // 얼굴 설정만 초기화
   const handleResetFace = () => {
@@ -46,6 +83,7 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
     try {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('selectedImage');
+        localStorage.removeItem('uploadedImageData'); // feature_img 데이터도 제거
       }
     } catch {}
   };
@@ -64,14 +102,18 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
     const reader = new FileReader();
     reader.onload = () => {
       const result = reader.result as string;
+      // feature_img 썸네일로 사용
       setAddThumb(result);
       setIsLoading(true);
-      setSelectedImage('/asset/png/work1_girl.png');
+      // 변경된 이미지는 man/girl 이미지 사용
+      const changedImagePath = getChangedImagePath();
+      setSelectedImage(changedImagePath);
       setHasSelectedCustomImage(true);
       setTimeout(() => setIsLoading(false), 3000);
       try {
         if (typeof window !== 'undefined') {
-          localStorage.setItem('selectedImage', '/asset/png/work1_girl.png');
+          localStorage.setItem('selectedImage', changedImagePath);
+          localStorage.setItem('uploadedImageData', result); // feature_img 데이터 저장
         }
       } catch {}
     };
@@ -79,14 +121,18 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
   };
 
   const handleImageSelect = (imageUrl: string) => {
+    // feature_img 썸네일로 사용
     setAddThumb(imageUrl);
     setIsLoading(true);
-    setSelectedImage('/asset/png/work1_girl.png');
+    // 변경된 이미지는 man/girl 이미지 사용
+    const changedImagePath = getChangedImagePath();
+    setSelectedImage(changedImagePath);
     setHasSelectedCustomImage(true);
     setTimeout(() => { setIsLoading(false); }, 3000);
     try {
       if (typeof window !== 'undefined') {
-        localStorage.setItem('selectedImage', '/asset/png/work1_girl.png');
+        localStorage.setItem('selectedImage', changedImagePath);
+        localStorage.setItem('uploadedImageData', imageUrl); // feature_img 데이터 저장
       }
     } catch {}
   };
@@ -96,8 +142,8 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
   const handleApply = () => { console.log('Apply clicked'); };
 
   const handleStartPractice = () => {
-    // personality가 선택되지 않았으면 기본값 '까칠'로 설정
-    const finalPersonality = selectedPersonality || '까칠';
+    // personality가 선택되지 않았으면 기본값 'basic'로 설정 (변경됨: 까칠 → basic)
+    const finalPersonality = selectedPersonality || 'basic';
     
     // 사용자가 커스텀 이미지를 선택하지 않았으면 localStorage에서 제거
     if (!hasSelectedCustomImage) {
@@ -110,7 +156,7 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
     
     // 외부에서 단계 전환을 처리하도록 콜백이 제공되면 사용
     if (onNext) {
-      onNext(finalPersonality, sliderValue);
+      onNext(finalPersonality, sliderValue, hasSelectedCustomImage); // hasSelectedCustomImage 추가
       return;
     }
     const params = new URLSearchParams({
@@ -118,7 +164,8 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
       opponentCharacter,
       selectedPersonality: finalPersonality,
       sliderValue: sliderValue.toString(),
-      workIndex: selectedWorkIndex?.toString() || '1' // 작품 인덱스 전달
+      workIndex: selectedWorkIndex?.toString() || '1', // 작품 인덱스 전달
+      hasCustomImage: hasSelectedCustomImage.toString() // 얼굴 설정 여부 전달
     });
     router.push(`/runPage?${params.toString()}`);
   };
@@ -154,7 +201,7 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
             </div>
           </div>
         ) : (
-          <img src={selectedImage || '/asset/png/work1_default_img.png'} alt="참고 이미지" className={styles.referenceImage} />
+          <img src={selectedImage || getDefaultImagePath()} alt="참고 이미지" className={styles.referenceImage} />
         )}
       </div>
 

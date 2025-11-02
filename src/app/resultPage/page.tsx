@@ -1,6 +1,9 @@
 'use client';
 
 import React from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { QRCodeSVG } from 'qrcode.react';
+import { WORKS } from '../../constants/works';
 import styles from './page.module.css';
 
 interface SimilarityData {
@@ -78,15 +81,29 @@ const DialogueMatch = ({ script, recognized }: { script: string; recognized: str
 };
 
 export default function ResultPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [similarityData, setSimilarityData] = React.useState<SimilarityData[]>([]);
   const [averageSimilarity, setAverageSimilarity] = React.useState<number>(0);
+  const [videoUrl, setVideoUrl] = React.useState<string | null>(null);
+  
+  // URL 파라미터로 전달받은 정보
+  const workIndex = parseInt(searchParams.get('workIndex') || '1');
+  const selectedCharacter = searchParams.get('selectedCharacter') || '';
+  
+  // WORKS 배열에서 정보 가져오기
+  const currentWork = WORKS[workIndex - 1] || WORKS[0];
+  const sceneInfo = currentWork.sceneInfo;
+  const workTitle = currentWork.title;
 
   React.useEffect(() => {
     try {
       const stored = localStorage.getItem('similarityData');
       if (stored) {
         const data = JSON.parse(stored) as SimilarityData[];
-        setSimilarityData(data);
+        // cueIndex 기준으로 정렬 (비동기 응답 순서 보장)
+        const sortedData = data.sort((a, b) => a.cueIndex - b.cueIndex);
+        setSimilarityData(sortedData);
 
         if (data.length > 0) {
           const total = data.reduce((sum, item) => sum + item.similarity, 0);
@@ -97,6 +114,16 @@ export default function ResultPage() {
     } catch (err) {
       console.error('Failed to load similarity data:', err);
     }
+
+    // Google Drive URL 가져오기
+    try {
+      const storedVideoUrl = localStorage.getItem('practiceVideoUrl');
+      if (storedVideoUrl) {
+        setVideoUrl(storedVideoUrl);
+      }
+    } catch (err) {
+      console.error('Failed to load video URL:', err);
+    }
   }, []);
 
   return (
@@ -106,19 +133,33 @@ export default function ResultPage() {
         <div className={styles.leftContainer}>
           <h2 className={styles.title}>연습 영상 조회/저장하기</h2>
           <div className={styles.qrCodeContainer}>
-            <div className={styles.qrCode}></div>
+            <div className={styles.qrCode}>
+              {videoUrl ? (
+                <QRCodeSVG
+                  value={videoUrl}
+                  size={245}
+                  level="H"
+                  includeMargin={false}
+                  fgColor="#8876FF"
+                />
+              ) : (
+                <span style={{ color: '#7560FF', fontSize: '24px', fontWeight: 'bold' }}>
+                  영상을 불러올 수 없습니다
+                </span>
+              )}
+            </div>
           </div>
           {/* 연습 상세 정보 박스 - QR코드 아래로 이동 */}
           <div style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
             <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
               <span className={styles.detailLabel}>연습한 장면</span>
-              <div style={{width: '50px'}}></div>
-              <span className={styles.detailValue}>도깨비 3화 S#23</span>
+              <div style={{width: '25px'}}></div>
+              <span className={styles.detailValue}>{workTitle} {sceneInfo}</span>
             </div>
             <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
               <span className={styles.detailLabel}>연습한 역할</span>
-              <div style={{width: '50px'}}></div>
-              <span className={styles.detailValue}>김신</span>
+              <div style={{width: '25px'}}></div>
+              <span className={styles.detailValue}>{selectedCharacter}</span>
             </div>
           </div>
 

@@ -10,7 +10,7 @@ import styles from './SettingsModal.module.css';
 export interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: () => void;
+  onSave: (settings: { sliderValue: number; selectedPersonality: string; selectedImage: string }) => void;
   selectedCharacter: string;
   opponentCharacter: string;
   sliderValue: number;
@@ -39,6 +39,49 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [isImageModalOpen, setIsImageModalOpen] = React.useState(false);
   const [addThumb, setAddThumb] = React.useState<string | null>(null); // startPage 3단계와 동일
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  
+  // 로컬 상태로 모달 내부에서 관리 (비동기 업데이트 문제 해결)
+  const [localSliderValue, setLocalSliderValue] = React.useState(sliderValue);
+  const [localSelectedPersonality, setLocalSelectedPersonality] = React.useState(selectedPersonality);
+  const [localSelectedImage, setLocalSelectedImage] = React.useState(selectedImage);
+
+  // 모달이 열릴 때 props 값을 로컬 상태로 동기화
+  React.useEffect(() => {
+    if (isOpen) {
+      setLocalSliderValue(sliderValue);
+      setLocalSelectedPersonality(selectedPersonality);
+      setLocalSelectedImage(selectedImage);
+      console.log('🔄 SettingsModal opened, syncing local state:', {
+        sliderValue,
+        selectedPersonality,
+        selectedImage
+      });
+    }
+  }, [isOpen, sliderValue, selectedPersonality, selectedImage]);
+
+  // 모달이 열릴 때 현재 선택된 이미지가 커스텀 이미지인지 확인하고 썸네일 표시
+  React.useEffect(() => {
+    if (isOpen && localSelectedImage) {
+      if (localSelectedImage.includes('work1_girl.png')) {
+        // 커스텀 이미지가 선택되어 있으면 localStorage에서 실제 업로드한 이미지 데이터 로드
+        try {
+          if (typeof window !== 'undefined') {
+            const uploadedImageData = localStorage.getItem('uploadedImageData');
+            if (uploadedImageData) {
+              setAddThumb(uploadedImageData); // 실제 업로드한 이미지 dataURL 표시
+              console.log('📸 Custom image detected, showing uploaded thumbnail');
+            } else {
+              setAddThumb(null);
+            }
+          }
+        } catch {
+          setAddThumb(null);
+        }
+      } else {
+        setAddThumb(null);
+      }
+    }
+  }, [isOpen, localSelectedImage]);
 
   if (!isOpen) return null;
 
@@ -47,17 +90,28 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     if (fileInputRef.current) fileInputRef.current.click();
   };
 
-  const handleReset = () => {
-    // startPage 3단계와 동일 동작
-    setSliderValue(0);
-    setSelectedPersonality('까칠');
+  // 얼굴 설정 초기화
+  const handleFaceReset = () => {
     setAddThumb(null);
-    onImageReset();
+    const def = '/asset/png/work1_default_img.png';
+    setLocalSelectedImage(def); // 로컬 상태 업데이트
     try {
       if (typeof window !== 'undefined') {
-        localStorage.setItem('selectedImage', '/asset/png/work1_default_img.png');
+        localStorage.setItem('selectedImage', def);
+        localStorage.removeItem('uploadedImageData'); // 업로드한 이미지 데이터도 삭제
       }
     } catch {}
+    console.log('🔄 Face settings reset, local state:', { localSelectedImage: def });
+  };
+
+  // 목소리 설정 초기화
+  const handleVoiceReset = () => {
+    setLocalSliderValue(0); // 로컬 상태 업데이트
+    setLocalSelectedPersonality(''); // 로컬 상태 업데이트 (아무것도 선택 안 된 상태, basic)
+    console.log('🔄 Voice settings reset, local state:', { 
+      localSliderValue: 0, 
+      localSelectedPersonality: '' 
+    });
   };
 
   const handlePreview = () => {
@@ -94,7 +148,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className={styles.faceSettings}>
               <div className={styles.sectionHeader}>
                 <h3 className={styles.sectionTitle}>얼굴 설정</h3>
-                <button className={styles.resetIconBtn} onClick={handleReset} aria-label="reset">
+                <button className={styles.resetIconBtn} onClick={handleFaceReset} aria-label="reset face">
                   <img src="/asset/svg/reset2.svg" alt="reset" width={29} height={29} />
                 </button>
               </div>
@@ -110,17 +164,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     if (!file) return;
                     const reader = new FileReader();
                     reader.onload = () => {
-                      // startPage 3단계와 동일: 업로드한 이미지는 work1_girl.png로 변환
+                      // 업로드한 이미지의 dataURL
                       const result = reader.result as string;
-                      setAddThumb(result);
-                      onImageSelect('/asset/png/work1_girl.png');
+                      const imagePath = '/asset/png/work1_girl.png';
+                      setAddThumb(result); // 썸네일에 실제 업로드한 이미지 표시
+                      setLocalSelectedImage(imagePath); // 로컬 상태 업데이트
                       try {
                         if (typeof window !== 'undefined') {
-                          localStorage.setItem('selectedImage', '/asset/png/work1_girl.png');
+                          localStorage.setItem('selectedImage', imagePath);
+                          localStorage.setItem('uploadedImageData', result); // 실제 업로드한 이미지 데이터 저장
+                          console.log('💾 Saved uploaded image data to localStorage');
                         }
                       } catch {}
                     };
                     reader.readAsDataURL(file);
+                    
+                    // 같은 파일을 다시 선택할 수 있도록 input value 초기화
+                    if (e.target) {
+                      e.target.value = '';
+                    }
                   }} />
                 </div>
               </div>
@@ -130,7 +192,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className={styles.voiceSettings}>
               <div className={styles.sectionHeader}>
                 <h3 className={styles.sectionTitle}>목소리 설정</h3>
-                <button className={styles.resetIconBtn} onClick={handleReset} aria-label="reset">
+                <button className={styles.resetIconBtn} onClick={handleVoiceReset} aria-label="reset voice">
                   <img src="/asset/svg/reset2.svg" alt="reset" width={29} height={29} />
                 </button>
               </div>
@@ -138,8 +200,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <p className={styles.sectionSubtitle}>피치</p>
                 <div className={styles.sliderContainer}>
                   <Slider
-                    value={sliderValue}
-                    onChange={setSliderValue}
+                    value={localSliderValue}
+                    onChange={setLocalSliderValue}
                     min={-2}
                     max={2}
                     step={1}
@@ -151,8 +213,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div className={styles.toneButtons}>
                   <ToggleButtonGroup
                     options={['까칠', '다정']}
-                    selectedOption={selectedPersonality}
-                    onSelect={setSelectedPersonality}
+                    selectedOption={localSelectedPersonality}
+                    onSelect={setLocalSelectedPersonality}
                   />
                 </div>
                 
@@ -162,7 +224,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             
             {/* 저장 버튼 */}
             <div className={styles.saveButtonContainer}>
-              <button className={styles.saveButton} onClick={onSave}>
+              <button className={styles.saveButton} onClick={() => {
+                // 로컬 상태의 현재 값을 onSave에 전달 (확실한 상태 동기화)
+                const settingsToSave = {
+                  sliderValue: localSliderValue,
+                  selectedPersonality: localSelectedPersonality,
+                  selectedImage: localSelectedImage || '/asset/png/work1_default_img.png'
+                };
+                console.log('💾 Saving settings from local state:', settingsToSave);
+                onSave(settingsToSave);
+              }}>
                 저장
               </button>
             </div>

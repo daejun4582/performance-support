@@ -11,6 +11,40 @@
   position: relative;
 }
 
+/* 비디오 컨테이너 - 전체 화면 배경 */
+.videoContainer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  background: #000;
+  overflow: hidden;
+}
+
+.videoContainer video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 숨쉬는 영상 컨테이너 - 사용자 턴 전용 */
+.idleVideoContainer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  background: #000;
+  overflow: hidden;
+}
+
+.idleVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* 1단계: 카메라 확인 페이지 */
 .cameraStep {
   display: flex;
@@ -311,9 +345,10 @@
   position: relative;
 }
 
-/* 이미지 숨기기 클래스 */
+/* 이미지/동영상 숨기기 클래스 - 흰색 배경 표시 */
 .practiceStep.hideImage {
   background-image: none;
+  background-color: #FFFFFF;
 }
 
 /* 차례 표시 */
@@ -481,7 +516,8 @@
 
 .leftBadgeOpp {
   position: relative;
-  width: 167.294px;
+  min-width: 167.294px;
+  width: auto;
   height: 79px;
   border-radius: 9.294px;
   border: 3.485px solid rgba(114, 97, 244, 0.60);
@@ -490,6 +526,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  white-space: nowrap;
+  padding: 0 25px;
   text-align: center;
   font-feature-settings: 'liga' off, 'clig' off;
   font-family: Pretendard;
@@ -737,3 +775,43 @@
 .labelView { position: absolute; bottom: 132.5px; right: 175px; }
 .labelSettings { position: absolute; bottom: 170px; right: 40px; }
 .labelModeConver { position: absolute; bottom: 120px; left: 210px; }
+
+/* 로딩 오버레이 */
+.loadingOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.loadingContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.loadingSpinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(117, 96, 255, 0.3);
+  border-top-color: #7560FF;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loadingText {
+  color: #FFF;
+  font-family: "Pretendard Variable";
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}

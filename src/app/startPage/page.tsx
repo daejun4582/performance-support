@@ -6,13 +6,7 @@ import { PracticeStartButton } from '../../components/PrimaryButton';
 import SettingComp from './settingComp';
 import styles from './page.module.css';
 import { useRouter } from 'next/navigation';
-
-type WorkInfo = { src: string, alt: string, characters: { male: string, female: string }, sceneInfo: string };
-const WORKS: WorkInfo[] = [
-  { src: '/asset/png/work1.png', alt: '작품 1', characters: { male: '유진 초이', female: '고애신' }, sceneInfo: '3화 S#40. 양복점/ 재봉실 (낮)' },
-  { src: '/asset/png/work2.png', alt: '작품 2', characters: { male: '유시진', female: '강모연' }, sceneInfo: '3화 #36-1. 난파선 안 (낮)' },
-  { src: '/asset/png/work3.png', alt: '작품 3', characters: { male: '', female: '' }, sceneInfo: '' },
-];
+import { WORKS } from '../../constants/works';
 
 export default function StartPage() {
   const router = useRouter();
@@ -22,7 +16,6 @@ export default function StartPage() {
   const [selectedWorkIndex, setSelectedWorkIndex] = React.useState<number | null>(null);
   const [showAnimation, setShowAnimation] = React.useState(false);
   const [cardAnimation, setCardAnimation] = React.useState<'slideIn' | 'slideOut' | null>(null);
-  const [showSettingAnimation, setShowSettingAnimation] = React.useState(false);
   const [transitionRect, setTransitionRect] = React.useState<DOMRect | null>(null);
   const [isTransitioning, setIsTransitioning] = React.useState(false);
   const [roleReady, setRoleReady] = React.useState(false);
@@ -46,13 +39,13 @@ export default function StartPage() {
   // Setting 값 저장
   const [personalityValue, setPersonalityValue] = React.useState<string>('까칠');
   const [sliderValue, setSliderValue] = React.useState<number>(0);
+  const [hasCustomImageValue, setHasCustomImageValue] = React.useState<boolean>(false);
   
   // 현재 단계보다 앞의 단계들은 비활성화
   const disabledSteps = Array.from({ length: currentStep + 1 }, (_, i) => i).filter(step => step > currentStep);
 
   const handleCharacterCardClick = (characterName: string) => {
     setSelectedCharacter(characterName);
-    setShowSettingAnimation(true);
     setCurrentStep(2); // 상대역 설정 단계로 이동
   };
 
@@ -482,13 +475,22 @@ export default function StartPage() {
                     (videoRef.current as any).srcObject = null;
                   }
                 } catch {}
+                // opponentCharacter 계산
+                let calculatedOpponentCharacter = '';
+                if (selectedCharacter && selectedWorkIndex !== null && selectedWorkIndex >= 1 && selectedWorkIndex <= WORKS.length) {
+                  const work = WORKS[selectedWorkIndex - 1];
+                  calculatedOpponentCharacter = selectedCharacter === work.characters.male
+                    ? work.characters.female
+                    : work.characters.male;
+                }
                 // URL 파라미터 전달 (SettingComp에서 저장한 값 사용)
                 const params = new URLSearchParams({
                   selectedCharacter: selectedCharacter || '',
-                  opponentCharacter: '',
+                  opponentCharacter: calculatedOpponentCharacter,
                   selectedPersonality: personalityValue,
                   sliderValue: sliderValue.toString(),
-                  workIndex: selectedWorkIndex?.toString() || '1'
+                  workIndex: selectedWorkIndex?.toString() || '1',
+                  hasCustomImage: hasCustomImageValue.toString() // 얼굴 설정 여부 추가
                 });
                 router.push(`/runPage?${params.toString()}`);
               }} />
@@ -499,8 +501,9 @@ export default function StartPage() {
         {/* 상대역 설정 단계 */}
         {currentStep === 2 && selectedCharacter && selectedWorkIndex !== null && (
           <div className={styles.settingRow}>
-            <div className={`${showSettingAnimation ? styles.settingSlideIn : ''}`}>
+            <div className={styles.settingSlideIn}>
               <SettingComp 
+                key={`setting-${selectedCharacter}-${selectedWorkIndex}`} 
                 selectedCharacter={selectedCharacter}
                 opponentCharacter={
                   selectedCharacter === WORKS[selectedWorkIndex - 1].characters.male
@@ -508,10 +511,11 @@ export default function StartPage() {
                     : WORKS[selectedWorkIndex - 1].characters.male
                 }
                 selectedWorkIndex={selectedWorkIndex}
-                onNext={(personality, slider) => {
-                  // personality와 slider 값 저장
+                onNext={(personality, slider, hasCustomImage) => {
+                  // personality, slider, hasCustomImage 값 저장
                   setPersonalityValue(personality);
                   setSliderValue(slider);
+                  setHasCustomImageValue(hasCustomImage);
                   
                   // 4단계(카메라 설정)로 전환
                   setCurrentStep(3);

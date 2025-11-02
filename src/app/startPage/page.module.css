@@ -117,21 +117,17 @@
 
 /* 설정 컴포넌트 등장 애니메이션 */
 .settingSlideIn {
-  animation: settingSlideIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: settingSlideIn 0.5s ease-out forwards;
 }
 
 @keyframes settingSlideIn {
   0% {
     opacity: 0;
-    transform: translateY(50px) scale(0.9);
-  }
-  50% {
-    opacity: 0.7;
-    transform: translateY(20px) scale(0.95);
+    transform: translateY(30px);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
