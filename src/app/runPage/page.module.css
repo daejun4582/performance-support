@@ -18,7 +18,8 @@
   width: 100%;
   height: 100%;
   z-index: 0;
-  background: #000;
+  /* background: radial-gradient(175.33% 273.27% at 53.33% 236.85%, #D0C8FF 0%, #FEFEF1 100%); */
+  background: #FFFFFF;
   overflow: hidden;
 }
 
@@ -35,7 +36,8 @@
   width: 100%;
   height: 100%;
   z-index: 0;
-  background: #000;
+  /* background: radial-gradient(175.33% 273.27% at 53.33% 236.85%, #D0C8FF 0%, #FEFEF1 100%); */
+  background: #FFFFFF;
   overflow: hidden;
 }
 
