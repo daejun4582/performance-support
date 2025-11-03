@@ -1,6 +1,6 @@
 # Performance Support : 연기 연습 보조 서비스
 
-![performance-support-banner](https://raw.githubusercontent.com/daejun4582/performance-support/main/public/asset/png/splash.png)
+![performance-support-banner](https://raw.githubusercontent.com/daejun4582/performance-support/main/splash.png)
 
 ## :bulb: 소개
 
@@ -96,7 +96,7 @@ performance-support/
 │   │   │   ├── stt/     # 음성 인식 API
 │   │   │   ├── upload-video/  # 영상 업로드 API
 │   │   │   └── auth/    # Google OAuth 인증
-│   │   ├── logoPage/    # 로고 페이지
+│   │   ├── logoPage/    # 스플래쉬 페이지
 │   │   ├── startPage/   # 시작 페이지 (작품/캐릭터 선택)
 │   │   ├── runPage/     # 연기 연습 페이지
 │   │   └── resultPage/  # 결과 페이지
