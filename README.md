@@ -127,7 +127,7 @@ performance-support/
 ## 🔗 관련 링크
 
 - GitHub Repository: https://github.com/daejun4582/performance-support
-- Figma Url : https://www.figma.com/design/sXya8CS3IIq9gjEBVMS9N4/%EC%97%B0%EA%B8%B0%EB%B3%B4%EC%A3%A0--%EC%97%B0%EA%B8%B0-%EC%97%B0%EC%8A%B5-%EB%B3%B4%EC%A1%B0-%EC%84%9C%EB%B9%84%EC%8A%A4-%EC%A0%84%EC%8B%9C-%EC%9D%B8%ED%84%B0%EB%9E%99%EC%85%98?node-id=278-631&m=dev
+- Figma Url : https://www.figma.com/design/V6G6BAE3QEGRLW3ylh0wfb/JOB-team-library?node-id=0-1&p=f&t=snaw83uxNpFotfkY-0
 
 ## 📝 라이선스
 
