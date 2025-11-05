@@ -94,6 +94,17 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
     setSelectedPersonality(null); // 초기화 시 선택 해제
   };
 
+  // 목소리 설정 토글 핸들러 (이미 선택된 버튼 재클릭 시 초기화)
+  const handlePersonalityToggle = (option: string) => {
+    if (selectedPersonality === option) {
+      // 이미 선택된 버튼을 다시 클릭 → 초기화와 동일하게 null 설정
+      setSelectedPersonality(null);
+    } else {
+      // 다른 버튼 클릭 또는 선택 안 된 상태에서 클릭 → 해당 값 설정
+      setSelectedPersonality(option);
+    }
+  };
+
   const handleAdd = () => { if (fileInputRef.current) fileInputRef.current.click(); };
 
   const onFileChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -231,7 +242,7 @@ export default function SettingComp({ selectedCharacter, opponentCharacter, sele
             <p className={styles.sectionSubtitle}>피치</p>
             <div className={styles.sliderContainer}><Slider value={sliderValue} onChange={setSliderValue} min={-2} max={2} step={1} marks={[-2, 0, 2]} /></div>
             <p className={styles.sectionSubtitle}>말투 프롬프트</p>
-            <div className={styles.toneButtons}><ToggleButtonGroup options={['까칠', '다정']} selectedOption={selectedPersonality || undefined} onSelect={setSelectedPersonality} /></div>
+            <div className={styles.toneButtons}><ToggleButtonGroup options={['까칠', '다정']} selectedOption={selectedPersonality || undefined} onSelect={handlePersonalityToggle} /></div>
             <div className={`${styles.voiceControls} ${styles['form-actions']}`}>
               <div className={styles['form-button-group']}>
                 <PreviewButton onClick={handlePreview} />

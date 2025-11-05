@@ -56,7 +56,7 @@ export default function RunPage() {
   const [isCCSelected, setIsCCSelected] = React.useState(true); // 기본적으로 CC 켜짐
   const [isEyeSelected, setIsEyeSelected] = React.useState(false);
   const [isAdlibMode, setIsAdlibMode] = React.useState(false);
-  
+
   // isPlaySelected 변경 시 ref 업데이트
   React.useEffect(() => {
     isPlaySelectedRef.current = isPlaySelected;
@@ -86,6 +86,7 @@ export default function RunPage() {
   const subtitleRef = React.useRef<HTMLDivElement>(null);
   const [userRecordedText, setUserRecordedText] = React.useState('');
   const [isRecording, setIsRecording] = React.useState(false);
+  const [showStopButton, setShowStopButton] = React.useState(false); // 7초 경과 후 버튼 표시
   const [similarityScore, setSimilarityScore] = React.useState<number | null>(null);
   const [isProcessingComplete, setIsProcessingComplete] = React.useState(false); // Whisper 처리 완료 여부
   const [sceneInfo, setSceneInfo] = React.useState(''); // 연습 장면 정보
@@ -104,6 +105,8 @@ export default function RunPage() {
   // 녹화 시 사용한 mimeType과 파일 확장자 저장 (MediaRecorder.mimeType은 읽기 전용)
   const recordingMimeTypeRef = React.useRef<string>('video/webm');
   const recordingFileExtensionRef = React.useRef<string>('webm');
+  // 녹화 시작 시간을 저장할 ref
+  const recordingStartTimeRef = React.useRef<number | null>(null);
   
   // 자막 텍스트가 변경될 때 폰트 크기 조정
   React.useEffect(() => {
@@ -310,7 +313,7 @@ export default function RunPage() {
           imageUrl = getDefaultImagePath();
         } else {
           // 이미지 설정 했으면 localStorage에서 가져오기
-          const stored = localStorage.getItem('selectedImage');
+        const stored = localStorage.getItem('selectedImage');
           imageUrl = stored || getDefaultImagePath();
         }
         
@@ -424,8 +427,8 @@ export default function RunPage() {
             });
           } else {
             // 스크립트 대사인 경우
-            setSubtitleText(text);
-            setSubtitleKind(kind);
+          setSubtitleText(text);
+          setSubtitleKind(kind);
             // AI 대사로 바뀔 때 녹음 텍스트 초기화
             if (kind === 'ai') {
               setUserRecordedText('');
@@ -442,6 +445,9 @@ export default function RunPage() {
           } else if (type === 'stt-failed') {
             setMicError('음성 인식에 실패했습니다. 네트워크 상태를 확인한 뒤 다시 시도해주세요.');
           }
+        },
+        onRecordingStateChange: (isRecording: boolean) => {
+          setIsRecording(isRecording);
         }
       });
 
@@ -464,7 +470,7 @@ export default function RunPage() {
         if (currentPhase === 'ai-playing' || currentPhase === 'waiting') {
           turnEngine.resume();
         } else {
-          turnEngine.start();
+        turnEngine.start();
         }
       } else {
         turnEngine.pause();
@@ -515,6 +521,24 @@ export default function RunPage() {
       });
     }
   }, [currentPhase, router, similarityData, workIndex, selectedCharacter]);
+
+  // 7초 경과 후 녹음 정지 버튼 표시
+  React.useEffect(() => {
+    if (currentPhase === 'user-recording' && isRecording) {
+      // 7초 후 버튼 표시
+      const timer = setTimeout(() => {
+        setShowStopButton(true);
+      }, 7000);
+      
+      return () => {
+        clearTimeout(timer);
+        setShowStopButton(false);
+      };
+    } else {
+      // 녹음이 끝나거나 phase가 변경되면 버튼 숨김
+      setShowStopButton(false);
+    }
+  }, [currentPhase, isRecording]);
 
   // 카메라 단계 제거됨
 
@@ -747,6 +771,9 @@ export default function RunPage() {
         }
       };
 
+      // 녹화 시작 시간 저장
+      recordingStartTimeRef.current = Date.now();
+      
       recorder.start(1000); // 1초마다 데이터 수집
       videoRecorderRef.current = recorder;
       console.log('✅ Video recording started');
@@ -808,6 +835,27 @@ export default function RunPage() {
         if (canvasRef.current && canvasRef.current.parentNode) {
           document.body.removeChild(canvasRef.current);
           canvasRef.current = null;
+        }
+
+        // 녹화 시간 계산 및 저장
+        const endTime = Date.now();
+        const startTime = recordingStartTimeRef.current;
+        
+        if (startTime !== null) {
+          const durationInSeconds = Math.floor((endTime - startTime) / 1000);
+          
+          // localStorage에 duration 저장
+          try {
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('recordingDuration', durationInSeconds.toString());
+              console.log('💾 Saved recording duration:', durationInSeconds, 'seconds');
+            }
+          } catch (err) {
+            console.error('Failed to save recording duration:', err);
+          }
+          
+          // ref 초기화
+          recordingStartTimeRef.current = null;
         }
 
         // 녹화 시 사용한 mimeType으로 Blob 생성
@@ -976,26 +1024,92 @@ export default function RunPage() {
     setCurrentStep(2);
     setCountdown(3);
     setShowAction(false);
-    let n = 3;
-    const tick = () => {
-      if (n > 1) {
-        n -= 1;
-        setCountdown(n);
-        setTimeout(tick, 1000);
-      } else {
+    
+    // 카운트다운 음성 재생 설정 (각 발음 시점별 개별 딜레이)
+    const audioDelay3 = 0;        // "3" 발음 딜레이 (ms)
+    const audioDelay2 = 0;        // "2" 발음 딜레이 (ms)
+    const audioDelay1 = 100;      // "1" 발음 딜레이 (ms) - 조정 가능
+    const audioDelayAction = 100; // "Action" 발음 딜레이 (ms) - 조정 가능
+    
+    // 음성 파일 내부 실제 발음 시점 (초 단위)
+    const audioTime3 = 0;        // "3" 발음 시점: 0초
+    const audioTime2 = 0.7;      // "2" 발음 시점: 0.7초
+    const audioTime1 = 1.45;     // "1" 발음 시점: 1.45초
+    const audioTimeAction = 2.15; // "Action" 발음 시점: 2.15초
+    
+    // 카운트다운 음성 재생
+    const countdownAudio = new Audio('/asset/video_voice/count_down.wav');
+    
+    // "3" 발음: 0ms + delay3
+    setTimeout(() => {
+      countdownAudio.currentTime = audioTime3;
+      countdownAudio.play().catch(err => {
+        console.error('Failed to play countdown sound:', err);
+      });
+    }, audioDelay3);
+    
+    // "2" 발음: 700ms + delay2
+    setTimeout(() => {
+      if (countdownAudio) {
+        countdownAudio.currentTime = audioTime2;
+        if (countdownAudio.paused) {
+          countdownAudio.play().catch(err => {
+            console.error('Failed to play countdown sound at 2:', err);
+          });
+        }
+      }
+    }, 700 + audioDelay2);
+    
+    // "1" 발음: 1450ms + delay1
+    setTimeout(() => {
+      if (countdownAudio) {
+        countdownAudio.currentTime = audioTime1;
+        if (countdownAudio.paused) {
+          countdownAudio.play().catch(err => {
+            console.error('Failed to play countdown sound at 1:', err);
+          });
+        }
+      }
+    }, 1450 + audioDelay1);
+    
+    // "Action" 발음: 2150ms + delayAction
+    setTimeout(() => {
+      if (countdownAudio) {
+        countdownAudio.currentTime = audioTimeAction;
+        if (countdownAudio.paused) {
+          countdownAudio.play().catch(err => {
+            console.error('Failed to play countdown sound at Action:', err);
+          });
+        }
+      }
+    }, 2150 + audioDelayAction);
+    
+    // 정확한 타이밍에 맞춰 숫자 및 Action 표시 (각 딜레이 반영)
+    // "3": 0ms + delay3
+    // "2": 700ms + delay2
+    setTimeout(() => {
+      setCountdown(2);
+    }, 700 + audioDelay2);
+    
+    // "1": 1450ms + delay1
+    setTimeout(() => {
+      setCountdown(1);
+    }, 1450 + audioDelay1);
+    
+    // "Action": 2150ms + delayAction
+    setTimeout(() => {
         setCountdown(null);
         setShowAction(true);
-        // Action! 창을 1초 표시 후 사라지고 그 다음에 재생 시작
+    }, 2150 + audioDelayAction);
+    
+    // Action! 창을 1초 표시 후 사라지고 그 다음에 재생 시작
         setTimeout(() => {
           setShowAction(false);
-          // Action 창이 완전히 사라진 후 재생 시작
-          setTimeout(() => {
-            setIsPlaySelected(true);
-          }, 100);
-        }, 1000);
-      }
-    };
-    setTimeout(tick, 1000);
+      // Action 창이 완전히 사라진 후 재생 시작
+      setTimeout(() => {
+        setIsPlaySelected(true);
+      }, 100);
+    }, 2150 + audioDelayAction + 1000); // Action 표시 + 1초
   };
 
   // 설정 버튼 핸들러
@@ -1068,7 +1182,7 @@ export default function RunPage() {
             {sceneInfo}<br/>
             <img className={styles.arrowScene} src="/asset/svg/scene_arrow.svg" alt="setting_arrow" />
             <div className={styles.sceneDescription} style={{transform: 'translateY(-17px)'}}>
-            현재 연습 씬을 의미합니다.
+              현재 연습 씬을 의미합니다.
             </div>
           </div>
 
@@ -1207,8 +1321,8 @@ export default function RunPage() {
             {sceneInfo}
             <div className={styles.sceneDescription}>
                
+              </div>
             </div>
-          </div>
 
 
 
@@ -1255,18 +1369,35 @@ export default function RunPage() {
           {currentPhase === 'user-recording' && micError && (
             <div className={styles.manualControl} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
               <div className={styles.cameraError}>
-                <p>{micError}</p>
-                <button 
-                  onClick={() => setMicError(null)}
-                  className={styles.retryButton}
-                >
-                  닫기
-                </button>
+                  <p>{micError}</p>
+                  <button 
+                    onClick={() => setMicError(null)}
+                    className={styles.retryButton}
+                  >
+                    닫기
+                  </button>
+                </div>
               </div>
-            </div>
           )}
           
           {/* 녹음 완료 후 확인 UI 제거 - 바로 다음 턴으로 진행 */}
+
+          {/* 녹음 중지 버튼 - 사용자 녹음 중이고 7초 이상 경과했을 때만 표시 */}
+          {currentPhase === 'user-recording' && isRecording && showStopButton && (
+            <div style={{ position: 'absolute', bottom: '60px', left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
+              <button 
+                onClick={() => {
+                  if (turnEngine) {
+                    turnEngine.stopRecording();
+                  }
+                }}
+                className={styles.stopRecordingButton}
+                aria-label="녹음 중지"
+              >
+                녹음 중지
+              </button>
+            </div>
+          )}
 
           {/* 오른쪽 위: 재생/일시정지 버튼 (SVG 교체 + _selected) */}
           <div style={{ position: 'absolute', top: '60px', right: '60px' }}>

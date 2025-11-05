@@ -817,3 +817,28 @@
   font-weight: 600;
   letter-spacing: -0.5px;
 }
+
+.stopRecordingButton {
+  background: var(--primary-900, #7560ff);
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 600;
+  font-family: "Pretendard Variable";
+  box-shadow: 0 4px 12px rgba(117, 96, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.stopRecordingButton:hover {
+  background: var(--primary-800, #8876ff);
+  box-shadow: 0 6px 16px rgba(117, 96, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.stopRecordingButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(117, 96, 255, 0.3);
+}
