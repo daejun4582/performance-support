@@ -87,6 +87,7 @@ function ResultPageContent() {
   const [similarityData, setSimilarityData] = React.useState<SimilarityData[]>([]);
   const [averageSimilarity, setAverageSimilarity] = React.useState<number>(0);
   const [videoUrl, setVideoUrl] = React.useState<string | null>(null);
+  const [recordingDuration, setRecordingDuration] = React.useState<number | null>(null);
   
   // URL 파라미터로 전달받은 정보
   const workIndex = parseInt(searchParams.get('workIndex') || '1');
@@ -96,6 +97,20 @@ function ResultPageContent() {
   const currentWork = WORKS[workIndex - 1] || WORKS[0];
   const sceneInfo = currentWork.sceneInfo;
   const workTitle = currentWork.title;
+
+  // 초를 "X분 Y초" 형식으로 변환하는 함수
+  const formatDuration = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    
+    if (minutes === 0) {
+      return `${remainingSeconds}초`;
+    } else if (remainingSeconds === 0) {
+      return `${minutes}분`;
+    } else {
+      return `${minutes}분 ${remainingSeconds}초`;
+    }
+  };
 
   React.useEffect(() => {
     try {
@@ -124,6 +139,20 @@ function ResultPageContent() {
       }
     } catch (err) {
       console.error('Failed to load video URL:', err);
+    }
+
+    // 녹화 시간 가져오기
+    try {
+      const storedDuration = localStorage.getItem('recordingDuration');
+      if (storedDuration) {
+        const durationInSeconds = parseInt(storedDuration, 10);
+        if (!isNaN(durationInSeconds)) {
+          setRecordingDuration(durationInSeconds);
+          console.log('✅ Loaded recording duration:', durationInSeconds, 'seconds');
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load recording duration:', err);
     }
   }, []);
 
@@ -174,7 +203,11 @@ function ResultPageContent() {
               <div className={styles.clockIcon}></div>
               <span className={styles.infoLabel}>총 연습한 시간</span>
             </div>
-            <div className={styles.infoValue}>1분 22초</div>
+            <div className={styles.infoValue}>
+              {recordingDuration !== null 
+                ? formatDuration(recordingDuration)
+                : '--'}
+            </div>
           </div>
 
           {/* 대사 정확도 박스 + 각 대사별 정확도 */}

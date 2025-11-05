@@ -114,6 +114,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     });
   };
 
+  // 목소리 설정 토글 핸들러 (이미 선택된 버튼 재클릭 시 초기화)
+  const handlePersonalityToggle = (option: string) => {
+    if (localSelectedPersonality === option) {
+      // 이미 선택된 버튼을 다시 클릭 → 초기화와 동일하게 빈 문자열 설정
+      setLocalSelectedPersonality('');
+    } else {
+      // 다른 버튼 클릭 또는 선택 안 된 상태에서 클릭 → 해당 값 설정
+      setLocalSelectedPersonality(option);
+    }
+  };
+
   const handlePreview = () => {
     console.log('Preview clicked');
   };
@@ -214,7 +225,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <ToggleButtonGroup
                     options={['까칠', '다정']}
                     selectedOption={localSelectedPersonality}
-                    onSelect={setLocalSelectedPersonality}
+                    onSelect={handlePersonalityToggle}
                   />
                 </div>
                 

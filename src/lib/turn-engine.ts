@@ -20,6 +20,7 @@ export interface TurnEngineConfig {
   workIndex?: number; // work1 or work2
   opponentGender?: 'male' | 'female'; // 상대역 성별
   hasCustomImage?: boolean; // 얼굴 설정 여부
+  onRecordingStateChange?: (isRecording: boolean) => void; // 녹음 상태 변경 콜백
 }
 
 export interface TurnEngine {
@@ -31,6 +32,7 @@ export interface TurnEngine {
   getIndex: () => number;
   manualNext: () => void;
   confirmAndNext: () => void;
+  stopRecording: () => void; // 수동 녹음 정지
 }
 
 // Constants
@@ -482,6 +484,7 @@ async function startRecording(): Promise<void> {
     
     // 1. 녹음 시작 시 플래그 올리기
     isRecording = true;
+    config?.onRecordingStateChange?.(true);
 
     // Ensure AudioContext exists before any VAD work
     try {
@@ -535,6 +538,7 @@ async function startRecording(): Promise<void> {
       // 녹음 정리 및 바로 다음 턴으로 진행
       cleanupRecording();
       isRecording = false;
+      config?.onRecordingStateChange?.(false);
       
       console.log('✅ Recording completed, moving to next turn');
       
@@ -1178,6 +1182,21 @@ export function createTurnEngine(engineConfig: TurnEngineConfig): TurnEngine {
       if (currentPhase === 'waiting-for-confirmation') {
         isStoppedByUser = false;
         nextCue(); // waiting 단계 생략하고 바로 다음으로
+      }
+    },
+    
+    stopRecording: () => {
+      console.log('🛑 Manual recording stop requested');
+      if (currentPhase === 'user-recording' && isRecording && mediaRecorder && mediaRecorder.state !== 'inactive') {
+        console.log('⏹️ Stopping MediaRecorder manually');
+        mediaRecorder.stop();
+        // mediaRecorder.onstop에서 자동으로 처리됨 (cleanup, nextCue 등)
+      } else {
+        console.log('⚠️ Cannot stop recording: not in recording state', {
+          currentPhase,
+          isRecording,
+          mediaRecorderState: mediaRecorder?.state
+        });
       }
     }
   };
