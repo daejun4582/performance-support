@@ -1039,6 +1039,7 @@ export default function RunPage() {
     
     // 카운트다운 음성 재생
     const countdownAudio = new Audio('/asset/video_voice/count_down.wav');
+    countdownAudio.volume = 0.5; // 카운트다운 음성만 50% 볼륨
     
     // "3" 발음: 0ms + delay3
     setTimeout(() => {
