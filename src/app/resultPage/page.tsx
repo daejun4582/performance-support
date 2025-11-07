@@ -4,6 +4,7 @@ import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import { WORKS } from '../../constants/works';
+import { calculateMatchSegments } from '../../utils/similarity';
 import styles from './page.module.css';
 
 interface SimilarityData {
@@ -14,54 +15,10 @@ interface SimilarityData {
 }
 
 // 대사 일치 부분 하이라이트 컴포넌트
+// 개선: LCS 기반 알고리즘 사용으로 최적 매칭 보장
 const DialogueMatch = ({ script, recognized }: { script: string; recognized: string }) => {
-  // 앞에서부터 가장 긴 매칭 부분 찾기 (LCS 방식)
-  const findMatches = (script: string, recognized: string) => {
-    const scriptChars = Array.from(script);
-    const recognizedChars = Array.from(recognized);
-    const matches: Array<{ text: string; isMatch: boolean }> = [];
-
-    let scriptIdx = 0;
-    let recognizedIdx = 0;
-    let currentMatch = '';
-    let currentMismatch = '';
-
-    while (scriptIdx < scriptChars.length && recognizedIdx < recognizedChars.length) {
-      const scriptChar = scriptChars[scriptIdx].toLowerCase();
-      const recognizedChar = recognizedChars[recognizedIdx].toLowerCase();
-
-      if (scriptChar === recognizedChar || scriptChar.trim() === '') {
-        if (currentMismatch) {
-          matches.push({ text: currentMismatch, isMatch: false });
-          currentMismatch = '';
-        }
-        currentMatch += scriptChars[scriptIdx];
-        scriptIdx++;
-        recognizedIdx++;
-      } else {
-        if (currentMatch) {
-          matches.push({ text: currentMatch, isMatch: true });
-          currentMatch = '';
-        }
-        currentMismatch += scriptChars[scriptIdx];
-        scriptIdx++;
-      }
-    }
-
-    // 남은 부분 처리
-    if (currentMatch) matches.push({ text: currentMatch, isMatch: true });
-    if (currentMismatch) matches.push({ text: currentMismatch, isMatch: false });
-
-    // script에 남은 부분 추가
-    while (scriptIdx < scriptChars.length) {
-      matches.push({ text: scriptChars[scriptIdx], isMatch: false });
-      scriptIdx++;
-    }
-
-    return matches;
-  };
-
-  const matches = findMatches(script, recognized);
+  // LCS 기반 매칭 구간 계산 (개선된 알고리즘 사용)
+  const matches = calculateMatchSegments(script, recognized);
 
   return (
     <span>
